@@ -1,11 +1,12 @@
-from langchain.chains.llm import LLMChain
+from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 
-from application.game.exchange import Exchange
+from application.game.game_logic.exchange import Exchange
 from application.game.observer_logic.observer import Observable
-
+from llama_index.llms.openai import OpenAI
+from llama_index.core.llms import ChatMessage
 
 class Person(Observable):
-    def __init__(self, name: str, description: str, llm: LLMChain):
+    def __init__(self, name: str, description: str, llm: OpenAI):
         """
         Represents the person the LLM emulates and manages LLM interactions.
         :param name: Name of the person.
@@ -16,6 +17,9 @@ class Person(Observable):
         self.name = name
         self.description = description
         self.llm = llm
+        self.chat_history = [
+            ChatMessage(content=f"You are {self.name}. {self.description}")
+        ]
         self.exchange_history = Exchange()
 
     def ask_question(self, question: str) -> str:
@@ -25,15 +29,22 @@ class Person(Observable):
         :return: Response string from the LLM.
         """
         try:
-            # Query the LLM using LangChain (could be extended/adapted)
-            response = self.llm.run({"question": question, "description": self.description})
+            # Add the user's question to the chat history as a user message
+            self.chat_history.append(ChatMessage(role="user", content=question))
+
+            # Query the LLM with the current chat history
+            response = self.llm.chat(self.chat_history)
+
+            # Add the LLM's response to the chat history
+            self.chat_history.append(ChatMessage(role="assistant", content=response))
+
+            # Save the interaction in exchange history
+            self.exchange_history.add_exchange(question, response)
+
         except Exception as e:
             response = f"Error during LLM query: {e}"
 
-        # Save the interaction
-        self.exchange_history.add_exchange(question, response)
-
-        # Notify observers if the identity is revealed
+            # Notify observers if the identity is revealed
         if self.was_identity_revealed(response):
             self.notify_observers(event="identity_revealed", response=response)
 
@@ -53,6 +64,9 @@ class Person(Observable):
         Reset the interaction log for a new round by clearing the existing history.
         """
         self.exchange_history.clear_exchange_history()
+        self.chat_history = [
+            ChatMessage(role="system", content=f"You are {self.name}. {self.description}")
+        ]
 
     def get_interaction_log(self) -> list:
         """
