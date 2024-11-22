@@ -1,5 +1,5 @@
 class Score:
-    def __init__(self, initial_points=10):
+    def __init__(self, initial_points):
         """
         Represents the score for a round or a team.
         :param initial_points: Starting points for the score (default is 10).
