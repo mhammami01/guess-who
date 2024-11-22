@@ -1,9 +1,10 @@
 from langchain.chains.llm import LLMChain
 
 from application.game.exchange import Exchange
+from application.game.observer_logic.observer import Observable
 
 
-class Person:
+class Person(Observable):
     def __init__(self, name: str, description: str, llm: LLMChain):
         """
         Represents the person the LLM emulates and manages LLM interactions.
@@ -11,6 +12,7 @@ class Person:
         :param description: System prompt describing the person.
         :param llm: LangChain LLM instance.
         """
+        super().__init__()
         self.name = name
         self.description = description
         self.llm = llm
@@ -30,6 +32,11 @@ class Person:
 
         # Save the interaction
         self.exchange_history.add_exchange(question, response)
+
+        # Notify observers if the identity is revealed
+        if self.was_identity_revealed(response):
+            self.notify_observers(event="identity_revealed", response=response)
+
         return response
 
     def was_identity_revealed(self, response: str) -> bool:
@@ -53,4 +60,3 @@ class Person:
         :return: List of interaction dictionaries.
         """
         return self.exchange_history.get_exchange_history()
-

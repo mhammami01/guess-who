@@ -22,6 +22,17 @@ class Round:
         self.questions = []
         self.hints_used = 0
         self.hint_manager = hint_manager
+        self.was_person_revealed = False
+
+        # Register this round as an observer to the person
+        self.person.add_observer(self)
+
+    def update(self, event):
+        """
+        Handle events from the observable (Person).
+        """
+        if event == "identity_revealed":
+            self.was_person_revealed = True
 
     def use_hint(self, team, hint_topic):
         try:
@@ -41,9 +52,10 @@ class Round:
         :return: True if the guess is correct, otherwise False.
         """
         if guess.lower() == self.person.name.lower():
+            self.was_person_revealed = True
             return True
         else:
-            team.score.deduct(1) 
+            team.score.deduct(1)
             return False
 
     def get_round_summary(self):
@@ -74,9 +86,18 @@ class Round:
     def is_round_finished(self) -> bool:
         """
         Check if the round is finished or not.
-        :return: boolean indicating if the round is finished or not
+        A round ends if:
+        - The person is guessed correctly by the guessing team, OR
+        - The person reveals their identity, OR
+        - The maximum number of questions has been reached.
+        :return: boolean indicating if the round is finished or not.
         """
-        #  check number of guesses
+
+        # check if person has revealed themselves or was guessed correctly
+        if self.was_person_revealed:
+            return True
+
+        # Check if the maximum number of questions has been reached
         return len(self.person.exchange_history.get_exchange_history()) >= 10
         # TODO: check more or other things???
 
@@ -86,4 +107,3 @@ class Round:
         self.person.reset_interaction_log()
         self.hints_used = 0
         # TODO: More?
-
