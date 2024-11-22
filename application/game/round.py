@@ -32,6 +32,20 @@ class Round:
         except Exception as e:
             return f"Error providing hint: {e}"
 
+    def make_guess(self, team: Team, guess: str) -> bool:
+        """
+        Allow a team to guess the identity of the person.
+        Deduct a point if the guess is incorrect.
+        :param team: The team making the guess.
+        :param guess: The guessed name of the person.
+        :return: True if the guess is correct, otherwise False.
+        """
+        if guess.lower() == self.person.name.lower():
+            return True
+        else:
+            team.score.deduct(1) 
+            return False
+
     def get_round_summary(self):
         """
         Get a summary of the round. calculate scores, and determine the outcome.
