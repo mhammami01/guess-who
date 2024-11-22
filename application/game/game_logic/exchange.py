@@ -1,3 +1,6 @@
+from llama_index.core.base.llms.types import ChatResponse
+
+
 class Exchange:
     def __init__(self):
         """
@@ -5,7 +8,7 @@ class Exchange:
         """
         self.exchange_history = []
 
-    def add_exchange(self, question: str, response: str):
+    def add_exchange(self, question: str, response: ChatResponse):
         """
         Add a question and response pair to the exchange.
         :param question: The question asked.

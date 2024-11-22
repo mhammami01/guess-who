@@ -1,6 +1,6 @@
-from application.game.hint_manager import HintManager
-from application.game.person import Person
-from application.game.team import Team
+from application.game.game_logic.hint_manager import HintManager
+from application.game.game_logic.person import Person
+from application.game.game_logic.team import Team
 
 
 class Round:

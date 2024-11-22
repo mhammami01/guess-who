@@ -1,6 +1,6 @@
 from typing import Union
 
-from application.game.person import Person
+from application.game.game_logic.person import Person
 
 
 class HintManager:

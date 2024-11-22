@@ -1,4 +1,4 @@
-from application.game.score import Score
+from application.game.game_logic.score import Score
 
 
 class Team:
