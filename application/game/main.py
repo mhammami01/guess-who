@@ -4,6 +4,7 @@ import os
 
 from application.game.game_logic.game import Game
 from application.game.game_logic.person import Person
+from application.game.game_logic.round import Round
 from application.game.game_logic.score import Score
 from application.game.game_logic.team import Team
 
@@ -27,7 +28,6 @@ def initialise_llm_for_testing():
 
 # Step 1a: Setup Person
 def setup_person():
-    print("Setting up the person for the game...")
     person_name = input("Enter the name of the person to be guessed: ")
     person_description = input("Enter a system message for the person to be guessed: ")
     llm = initialise_llm_for_testing()
@@ -39,17 +39,16 @@ def setup_person():
 # Step 1b: Setup Teams
 def setup_teams():
     print("Setting up the teams...")
-    team_count = 2  # Enforce two teams as per your design
     teams = []
-    # First team is always "guessers"
-    guesser_name = input("Enter the name for the Guessers team: ")
-    guesser_score = Score(10)
-    teams.append(Team(name=guesser_name, score=guesser_score))
+    # First team set up
+    first_team_name = input("Enter the name for Team A: ")
+    first_team_score = Score(10)
+    teams.append(Team(name=first_team_name, score=first_team_score))
 
-    # Second team is always "agents"
-    agent_name = input("Enter the name for the Agents team: ")
-    agent_score = Score(0)
-    teams.append(Team(name=agent_name, score=agent_score))
+    # Second team set up
+    second_team_name = input("Enter the name for Team B: ")
+    second_team_score = Score(0)
+    teams.append(Team(name=second_team_name, score=second_team_score))
 
     print(f"Teams set up: {[team.name for team in teams]}")
     return teams
@@ -68,12 +67,73 @@ def setup_game_parameters(teams):
 # Step 1: Main Setup Game Method
 def setup_game():
     print("Welcome to the game Guess Who!\n")
-    person_setup = setup_person()
     teams = setup_teams()
     game_setup = setup_game_parameters(teams)
     print("\n--- Game Setup Complete ---")
-    return game_setup, person_setup
+    return game_setup
+
+
+# Step 2: Play Game
+def play_game(current_game):
+
+    for round_number in range(current_game.max_rounds):
+        print(f"\n--- Starting Round {round_number + 1} ---")
+
+        # Create a new person for the round using the existing setup_person logic
+        print(f"Setting up the person for Round {round_number + 1}...")
+        current_person = setup_person()
+
+        # Start a new round
+        current_round = Round(
+            person=current_person,
+            question_team=current_game.teams[0],
+            answer_team=current_game.teams[1],
+            hint_manager=current_game.hint_manager
+        )
+
+        # Alternate between teams
+        while not current_round.is_round_finished():
+            print(f"\n--- Round {round_number + 1}")
+            print(f"\n{current_round.question_team.name}'s turn.")
+            print(f"Total Score {current_round.question_team.name} Team: {current_round.question_team.get_total_score()}")
+            print(f"Round Score {current_round.question_team.name} Team: {current_round.question_team.get_round_score()}")
+            print(f"Total Score {current_round.answer_team.name} Team: {current_round.answer_team.get_total_score()}")
+            print(f"Round Score {current_round.answer_team.name} Team: {current_round.answer_team.get_round_score()}")
+
+            # Get user action
+            action = input("Choose an action: (1) Ask a question, (2) Use a hint, (3) Make a guess: ")
+
+            if action == "1":
+                # Ask a question
+                question = input("Enter your question: ")
+                current_person.ask_question(question)
+                # print(f"Person responds: {response}")
+
+            elif action == "2":
+                # Use a hint
+                hint_topic = input("Enter a topic for the hint: ")
+                hint = current_round.use_hint(current_round.question_team, hint_topic)
+                print(f"Hint: {hint}")
+
+            elif action == "3":
+                # Make a guess
+                guess = input("Enter your guess: ")
+                if current_round.make_guess(current_round.question_team, guess):
+                    print(f"Correct! The person is {current_person.name}.")
+                    current_round.was_person_revealed = True
+                else:
+                    print(f"Incorrect. The person is not {guess}.")
+            else:
+                print("Invalid action. Skipping turn.")
+
+        # End of round summary
+        print("\n--- End of Round ---")
+        print(current_round.get_round_summary())
+
+        current_round.finish_round()
+        current_game.switch_teams()
 
 
 if __name__ == "__main__":
-    game, person = setup_game()
+    game = setup_game()
+    play_game(game)

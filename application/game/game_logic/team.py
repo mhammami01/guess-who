@@ -6,12 +6,19 @@ class Team:
         self.name = name
         self.score = score
 
-    def get_score(self):
+    def get_total_score(self):
         """
-        Return the current score of the team.
-        :return: Current score of the team.
+        Return the current total score of the team.
+        :return: Current total score of the team.
         """
         return self.score.get_total_score()
+
+    def get_round_score(self):
+        """
+        Return the current score of the team for the round.
+        :return: Current round score of the team.
+        """
+        return self.score.get_round_score()
 
     def get_name(self):
         """

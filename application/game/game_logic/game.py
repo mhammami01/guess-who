@@ -34,7 +34,7 @@ class Game:
         Get the total score for all teams in the game.
         :return: Dictionary with team names as keys and their scores as values.
         """
-        return {team.get_name(): team.get_score() for team in self.teams}
+        return {team.get_name(): team.get_total_score() for team in self.teams}
 
     def check_game_over(self) -> bool:
         """
@@ -48,8 +48,8 @@ class Game:
         Determine the winner based on total scores.
         :return: Name of the winning team or None in case of a tie.
         """
-        team1_score = self.teams[0].get_score()
-        team2_score = self.teams[1].get_score()
+        team1_score = self.teams[0].get_total_score()
+        team2_score = self.teams[1].get_total_score()
 
         if team1_score > team2_score:
             return self.teams[0].get_name()

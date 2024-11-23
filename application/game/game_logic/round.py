@@ -27,7 +27,7 @@ class Round:
         # Register this round as an observer to the person
         self.person.add_observer(self)
 
-    def update(self, event):
+    def update(self, event, **kwargs):
         """
         Handle events from the observable (Person).
         """
@@ -38,7 +38,7 @@ class Round:
         try:
             hint = self.hint_manager.generate_hint(self.person, hint_topic)
             self.hints_used += 1
-            team.deduct_points(1)
+            team.score.deduct(1)
             return hint
         except Exception as e:
             return f"Error providing hint: {e}"
@@ -63,22 +63,22 @@ class Round:
         Get a summary of the round. calculate scores, and determine the outcome.
         :return: A dictionary with the results of the round.
         """
-        team1_score = self.question_team.get_score()
-        team2_score = self.answer_team.get_score()
+        team1_score = self.question_team.get_round_score()
+        team2_score = self.answer_team.get_round_score()
 
-        winner = None
-        if team1_score > team2_score:
-            winner = self.question_team.get_name()
-        elif team2_score > team1_score:
-            winner = self.answer_team.get_name()
+        # winner = None
+        # if team1_score > team2_score:
+        #     winner = self.question_team.get_name()
+        # elif team2_score > team1_score:
+        #     winner = self.answer_team.get_name()
 
         # Log round details
         round_summary = {
-            'team1': {'name': self.question_team.get_name(), 'score': team1_score},
-            'team2': {'name': self.answer_team.get_name(), 'score': team2_score},
+            'team1': {'name': self.question_team.get_name(), 'round_score': team1_score},
+            'team2': {'name': self.answer_team.get_name(), 'round_score': team2_score},
             'hints_used': self.hints_used,
             'interaction_log': self.person.get_interaction_log(),
-            'winner': winner
+            # 'winner': winner
         }
 
         return round_summary
@@ -104,6 +104,10 @@ class Round:
     def finish_round(self) -> None:
         self.question_team.score.update_total_score()
         self.answer_team.score.update_total_score()
+        self.question_team.score.reset_round_score()
+        self.answer_team.score.reset_round_score()
+        # Assign 10 points to the new guessing team (current answer team)
+        self.answer_team.score.reset(new_points=10)
         self.person.reset_interaction_log()
         self.hints_used = 0
         # TODO: More?

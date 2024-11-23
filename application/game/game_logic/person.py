@@ -3,7 +3,8 @@ from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
 from application.game.game_logic.exchange import Exchange
 from application.game.observer_logic.observer import Observable
 from llama_index.llms.openai import OpenAI
-from llama_index.core.llms import ChatMessage
+from llama_index.core.llms import ChatMessage, ChatResponse
+
 
 class Person(Observable):
     def __init__(self, name: str, description: str, llm: OpenAI):
@@ -22,7 +23,7 @@ class Person(Observable):
         ]
         self.exchange_history = Exchange()
 
-    def ask_question(self, question: str) -> str:
+    def ask_question(self, question: str) -> ChatResponse:
         """
         Process a question and return the LLM's response.
         :param question: Question string.
@@ -36,17 +37,20 @@ class Person(Observable):
             response = self.llm.chat(self.chat_history)
 
             # Add the LLM's response to the chat history
-            self.chat_history.append(ChatMessage(role="assistant", content=response))
+            response_content = response.message.content
+            self.chat_history.append(ChatMessage(role="assistant", content=response_content))
 
             # Save the interaction in exchange history
-            self.exchange_history.add_exchange(question, response)
+            self.exchange_history.add_exchange(question, response_content)
+
+            print(response)
 
         except Exception as e:
             response = f"Error during LLM query: {e}"
 
             # Notify observers if the identity is revealed
-        if self.was_identity_revealed(response):
-            self.notify_observers(event="identity_revealed", response=response)
+        if self.was_identity_revealed(response_content):
+            self.notify_observers(event="identity_revealed", response=response_content)
 
         return response
 

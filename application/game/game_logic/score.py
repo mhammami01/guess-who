@@ -37,6 +37,9 @@ class Score:
     def update_total_score(self):
         self.total_score += self.round_score
 
+    def reset_round_score(self):
+        self.round_score = 0
+
     def __str__(self):
         return f"""
         Current total Score: {self.total_score}

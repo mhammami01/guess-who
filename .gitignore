@@ -221,6 +221,7 @@ cmake-build-*/
 
 # IntelliJ
 out/
+out/
 
 # .idea
 .idea/
