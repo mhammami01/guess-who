@@ -60,3 +60,9 @@ class Game:
 
     def switch_teams(self):
         self.teams.reverse()
+
+    def increment_round_index(self):
+        """
+        Increment the round index to track the current round.
+        """
+        self.current_round_index += 1

@@ -76,11 +76,11 @@ def setup_game():
 # Step 2: Play Game
 def play_game(current_game):
 
-    for round_number in range(current_game.max_rounds):
-        print(f"\n--- Starting Round {round_number + 1} ---")
+    while not current_game.check_game_over():
+        print(f"\n--- Starting Round {current_game.current_round_index + 1} ---")
 
         # Create a new person for the round using the existing setup_person logic
-        print(f"Setting up the person for Round {round_number + 1}...")
+        print(f"Setting up the person for Round {current_game.current_round_index + 1}...")
         current_person = setup_person()
 
         # Start a new round
@@ -93,7 +93,7 @@ def play_game(current_game):
 
         # Alternate between teams
         while not current_round.is_round_finished():
-            print(f"\n--- Round {round_number + 1}")
+            print(f"\n--- Round {current_game.current_round_index + 1}")
             print(f"\n{current_round.question_team.name}'s turn.")
             print(f"Total Score {current_round.question_team.name} Team: {current_round.question_team.get_total_score()}")
             print(f"Round Score {current_round.question_team.name} Team: {current_round.question_team.get_round_score()}")
@@ -132,6 +132,18 @@ def play_game(current_game):
 
         current_round.finish_round()
         current_game.switch_teams()
+        current_game.increment_round_index()
+
+    # Declare the winner
+    print("\n--- Game Over ---")
+    print("\nFinal Scores:")
+    for team in current_game.teams:
+        print(f"{team.get_name()} Team: {team.get_total_score()} points")
+    winner = current_game.declare_winner()
+    if winner:
+        print(f"The winner is {winner}!")
+    else:
+        print("It's a tie!")
 
 
 if __name__ == "__main__":
