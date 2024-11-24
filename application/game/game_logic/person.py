@@ -12,7 +12,7 @@ class Person(Observable):
         Represents the person the LLM emulates and manages LLM interactions.
         :param name: Name of the person.
         :param description: System prompt describing the person.
-        :param llm: LangChain LLM instance.
+        :param llm: Llamaindex LLM instance.
         """
         super().__init__()
         self.name = name
