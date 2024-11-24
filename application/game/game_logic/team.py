@@ -26,3 +26,10 @@ class Team:
         :return: Team name.
         """
         return self.name
+
+    def to_dict(self):
+        return {
+            "name": self.get_name(),
+            "total_score": self.get_total_score(),
+            "round_score": self.get_round_score(),
+        }
