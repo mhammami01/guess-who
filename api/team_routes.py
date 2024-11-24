@@ -1,9 +1,6 @@
 from flask import jsonify, request
-from flask_openapi3 import APIBlueprint
-
 from application.game.game_logic.team import Team
 from application.game.game_logic.score import Score
-
 from flasgger import swag_from
 from flask import Blueprint
 
@@ -17,26 +14,37 @@ teams = {}
 @team_routes.post('/team')
 @swag_from({
     'summary': 'Create Teams',
-    'description': 'Create two teams with initial scores.',
+    'description': 'Create two teams with custom names and initial scores.',
+    'parameters': [
+        {
+            'name': 'body',
+            'in': 'body',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'team_a_name': {'type': 'string', 'example': 'Team 1'},
+                    'team_b_name': {'type': 'string', 'example': 'Team 2'}
+                },
+                'required': ['team_a_name', 'team_b_name']
+            }
+        }
+    ],
     'responses': {
         201: {
             'description': 'Successfully created teams.',
-            'content': {
-                'application/json': {
-                    'schema': {
-                        'type': 'object',
-                        'properties': {
-                            'teams': {
-                                'type': 'array',
-                                'items': {
-                                    'type': 'object',
-                                    'properties': {
-                                        'id': {'type': 'string'},
-                                        'name': {'type': 'string'},
-                                        'total_score': {'type': 'integer'},
-                                        'round_score': {'type': 'integer'}
-                                    }
-                                }
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'teams': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'object',
+                            'properties': {
+                                'id': {'type': 'string'},
+                                'name': {'type': 'string'},
+                                'total_score': {'type': 'integer'},
+                                'round_score': {'type': 'integer'}
                             }
                         }
                     }
@@ -46,43 +54,28 @@ teams = {}
     }
 })
 def create_teams():
-    """
-    Create Teams
-    ---
-    description: Create two teams with initial scores.
-    responses:
-      201:
-        description: Successfully created teams.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                teams:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                      name:
-                        type: string
-                      total_score:
-                        type: integer
-                      round_score:
-                        type: integer
-    """
-    # Create two teams with predefined scores
-    team_a = Team(name="Team A", score=Score(initial_points=10))
-    team_b = Team(name="Team B", score=Score(initial_points=0))
+    # Parse team names from request body
+    data = request.json
+    team_a_name = data.get("team_a_name")
+    team_b_name = data.get("team_b_name")
+
+    # Validate team names
+    if not team_a_name or not team_b_name:
+        return jsonify({"error": "Both team names are required."}), 400
+
+    # Create teams with provided names
+    team_a = Team(name=team_a_name, score=Score(initial_points=10))
+    team_b = Team(name=team_b_name, score=Score(initial_points=0))
 
     # Assign unique IDs for teams
     team_a_id = f"team_{len(teams) + 1}"
     team_b_id = f"team_{len(teams) + 2}"
 
+    # Save teams to in-memory storage
     teams[team_a_id] = team_a
     teams[team_b_id] = team_b
 
+    # Return created teams
     return jsonify({
         "teams": [
             {"id": team_a_id, **team_a.to_dict()},
@@ -100,7 +93,7 @@ def create_teams():
             'name': 'team_id',
             'in': 'path',
             'required': True,
-            'schema': {'type': 'string'}
+            'schema': {'type': 'string', 'example': 'team_1'}
         }
     ],
     'responses': {
@@ -126,35 +119,6 @@ def create_teams():
     }
 })
 def get_team(team_id):
-    """
-    Get Team
-    ---
-    description: Retrieve team information by ID.
-    parameters:
-      - name: team_id
-        in: path
-        required: true
-        schema:
-          type: string
-    responses:
-      200:
-        description: Team information.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                id:
-                  type: string
-                name:
-                  type: string
-                total_score:
-                  type: integer
-                round_score:
-                  type: integer
-      404:
-        description: Team not found.
-    """
     team = teams.get(team_id)
     if not team:
         return jsonify({"error": "Team not found"}), 404
@@ -183,12 +147,9 @@ def get_team(team_id):
                     'schema': {
                         'type': 'object',
                         'properties': {
-                            'points': {'type': 'integer'}
+                            'points': {'type': 'integer', 'example': 10}
                         },
-                        'example': {
-                            'points': 10
-                        }
-                    },
+                    }
                 }
             }
         }
@@ -247,7 +208,7 @@ def update_round_score(team_id):
             'name': 'team_id',
             'in': 'path',
             'required': True,
-            'schema': {'type': 'string'}
+            'schema': {'type': 'string', 'example': 'team_1'}
         }
     ],
     'responses': {
