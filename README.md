@@ -1,7 +1,7 @@
 ## Environment setup
 1. create a new conda environment:
 ```
-conda create -n ai-guardians python=3.8
+conda create -n ai-guardians python=3.12
 conda activate ai-guardians
 ```
 2. install required libraries (Other libraries can be added later)
