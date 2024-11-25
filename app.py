@@ -1,4 +1,5 @@
 from flask import Flask, render_template
+from flasgger import Swagger
 from flask_openapi3 import Info, OpenAPI
 
 from api.game_routes import game_routes
@@ -6,14 +7,17 @@ from api.round_routes import round_routes
 from api.team_routes import team_routes
 from api.person_routes import person_routes
 
-info = Info(title='Guess Who API', version='1.0.0')
-app = OpenAPI(__name__, info=info)
+# Initialize Flask app
+app = Flask(__name__)
 
-# Register API routes
-app.register_api(game_routes)
-app.register_api(round_routes)
-app.register_api(team_routes)
-app.register_api(person_routes)
+# Initialize Flasgger (Swagger UI)
+swagger = Swagger(app)
+
+# Register the API Blueprints (ensure these are registered properly)
+app.register_blueprint(game_routes)
+app.register_blueprint(round_routes)
+app.register_blueprint(team_routes)
+app.register_blueprint(person_routes)
 
 
 @app.route('/')
