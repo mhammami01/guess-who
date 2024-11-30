@@ -1,5 +1,6 @@
 import os
 import uuid
+from typing import List, Dict
 
 from dotenv import load_dotenv
 from flasgger import swag_from
@@ -16,7 +17,7 @@ from application.game.game_logic.team import Team
 game_routes = Blueprint('game_routes', __name__)
 
 # In-memory storage for active games
-games = {}
+games: Dict[str, Game] = {}
 
 
 # Initialize LLM instance
@@ -54,7 +55,12 @@ def initialise_llm_for_api():
                     'team_b_name': {
                         'type': 'string',
                         'description': 'Name for Team B.',
-                        'example': 'Team Beta'
+                        'example': 'Team Beta',
+                    },
+                    'is_running': {
+                        'type': 'boolean',
+                        'description': 'game status',
+                        'example': True
                     }
                 },
                 'required': ['team_a_name', 'team_b_name']
@@ -82,12 +88,16 @@ def initialise_llm_for_api():
                         'items': {
                             'type': 'object',
                             'properties': {
-                                'id': {'type': 'string'},
                                 'name': {'type': 'string'},
                                 'total_score': {'type': 'integer'},
                                 'round_score': {'type': 'integer'}
                             }
                         }
+                    },
+                    'is_running': {
+                        'type': 'boolean',
+                        'description': 'game status',
+                        'example': True
                     }
                 }
             }
@@ -102,7 +112,7 @@ def create_game():
     # Parse the JSON data
     data = request.get_json()
 
-    # Check if JSON parsing failed (silent=True just returns None, no error is raised)
+    # Check if JSON parsing failed
     if data is None:
         return jsonify({"error": "Invalid JSON. Please ensure your request has 'Content-Type: application/json'."}), 415
 
@@ -115,22 +125,22 @@ def create_game():
     if not team_a_name or not team_b_name:
         return jsonify({"error": "Both team names are required."}), 400
 
-    # Retrieve team IDs from the JSON
-    team_a_id = f"team_{uuid.uuid4()}"
-    team_b_id = f"team_{uuid.uuid4()}"
-
     # Assign unique ID for the game
     game_id = f"game_{len(games) + 1}"
 
     # Create team objects with initial scores
-    team_a = Team(team_id=team_a_id, name=team_a_name, score=Score(initial_points=10))
-    team_b = Team(team_id=team_b_id, name=team_b_name, score=Score(initial_points=0))
+    team_a = Team(name=team_a_name, score=Score(initial_points=10))
+    team_b = Team(name=team_b_name, score=Score(initial_points=0))
+
+    # Retrieve is_running from the JSON, default to False if not provided
+    is_running = data.get('is_running', True)
 
     # Initialize the Game object and add teams
     new_game = Game(
-        rounds=[],  # Initialize with an empty list of rounds
+        rounds=[],
         teams=[team_a, team_b],
         max_rounds=max_rounds,
+        is_running=is_running,
         hint_data_source=None  # Placeholder if needed
     )
 
@@ -143,18 +153,17 @@ def create_game():
         "max_rounds": max_rounds,
         "teams": [
             {
-                "id": team_a.id,
                 "name": team_a.name,
                 "total_score": team_a.score.total_score,
                 "round_score": team_a.score.round_score
             },
             {
-                "id": team_b.id,
                 "name": team_b.name,
                 "total_score": team_b.score.total_score,
                 "round_score": team_b.score.round_score
             }
-        ]
+        ],
+        "is_running": is_running
     }), 201
 
 
@@ -183,7 +192,6 @@ def create_game():
                         'items': {
                             'type': 'object',
                             'properties': {
-                                'id': {'type': 'string'},
                                 'name': {'type': 'string'},
                                 'total_score': {'type': 'integer'},
                                 'round_score': {'type': 'integer'}
@@ -199,23 +207,20 @@ def create_game():
                                 'person': {
                                     'type': 'object',
                                     'properties': {
-                                        'person_id': {'type': 'string'},
                                         'name': {'type': 'string'},
                                         'description': {'type': 'string'}
                                     }
                                 },
                                 'status': {'type': 'string', 'enum': ['in_progress', 'finished']},
-                                'question_team': {
+                                'llm_team': {
                                     'type': 'object',
                                     'properties': {
-                                        'id': {'type': 'string'},
                                         'name': {'type': 'string'}
                                     }
                                 },
-                                'answer_team': {
+                                'guess_team': {
                                     'type': 'object',
                                     'properties': {
-                                        'id': {'type': 'string'},
                                         'name': {'type': 'string'}
                                     }
                                 }
@@ -241,7 +246,6 @@ def get_game_status(game_id):
         "game_id": game_id,
         "teams": [
             {
-                "id": team.id,
                 "name": team.name,
                 "total_score": team.score.total_score,
                 "round_score": team.score.round_score
@@ -252,17 +256,14 @@ def get_game_status(game_id):
             {
                 "round_id": game_round.round_id,
                 "person": {
-                    "person_id": game_round.person.person_id,
                     "name": game_round.person.name,
                     "description": game_round.person.description
                 },
                 "status": 'finished' if game_round.is_round_finished() else 'in_progress',
-                "question_team": {
-                    "id": game_round.question_team.id,
+                "llm_team": {
                     "name": game_round.question_team.name
                 },
-                "answer_team": {
-                    "id": game_round.answer_team.id,
+                "guess_team": {
                     "name": game_round.answer_team.name
                 }
             }
@@ -275,9 +276,8 @@ def get_game_status(game_id):
 
 @game_routes.route('/game/<string:game_id>/round/start', methods=['POST'])
 @swag_from({
-    'summary': 'Start a new Round and Create Person',
-    'description': 'Starts a new round by creating a person and assigning them, along with teams, '
-                   'to the round within the specified game.',
+    'summary': 'Start a new Round',
+    'description': 'Starts a new round by assigning a person and two teams within a game.',
     'parameters': [
         {
             'name': 'game_id',
@@ -294,10 +294,8 @@ def get_game_status(game_id):
                 'properties': {
                     'person_name': {'type': 'string', 'example': 'Albert Einstein'},
                     'person_description': {'type': 'string', 'example': 'Do not reveal your identity.'},
-                    'team_a_id': {'type': 'string', 'example': 'team_1'},
-                    'team_b_id': {'type': 'string', 'example': 'team_2'}
                 },
-                'required': ['person_name', 'person_description', 'team_a_id', 'team_b_id']
+                'required': ['person_name', 'person_description']
             }
         }
     ],
@@ -312,7 +310,6 @@ def get_game_status(game_id):
                     'person': {
                         'type': 'object',
                         'properties': {
-                            'person_id': {'type': 'string'},
                             'name': {'type': 'string'},
                             'description': {'type': 'string'}
                         }
@@ -320,17 +317,15 @@ def get_game_status(game_id):
                     'teams': {
                         'type': 'object',
                         'properties': {
-                            'team_a': {
+                            'llm_team': {
                                 'type': 'object',
                                 'properties': {
-                                    'id': {'type': 'string'},
                                     'name': {'type': 'string'}
                                 }
                             },
-                            'team_b': {
+                            'guess_team': {
                                 'type': 'object',
                                 'properties': {
-                                    'id': {'type': 'string'},
                                     'name': {'type': 'string'}
                                 }
                             }
@@ -344,131 +339,48 @@ def get_game_status(game_id):
         }
     }
 })
-def start_round(game_id):  # game_id is now part of the route
-    # Get data from request body
+def start_round(game_id):
+    # Parse JSON data
     data = request.json
     person_name = data.get("person_name")
     person_description = data.get("person_description")
-    team_a_id = data.get("team_a_id")
-    team_b_id = data.get("team_b_id")
 
-    # Fetch the game by ID from the route parameter
+    # Fetch the game by its ID
     game = games.get(game_id)
     if not game:
         return jsonify({"error": f"Game with ID '{game_id}' not found."}), 404
 
-    # Fetch teams from the game object
-    team_a = next((team for team in game.teams if team.id == team_a_id), None)
-    team_b = next((team for team in game.teams if team.id == team_b_id), None)
-
-    if not team_a or not team_b:
-        return jsonify({"error": "One or both teams not found in the specified game."}), 404
-
-    # Create a new Person if it doesn't exist
-    person_id = f"person_{uuid.uuid4()}"
     # Initialize the Person instance
-    llm = initialise_llm_for_api()  # Assuming you have this function defined elsewhere
-    person = Person(person_id=person_id, name=person_name, description=person_description, llm=llm)
+    llm = initialise_llm_for_api()  # Create LLM instance if needed
+    person = Person(name=person_name, description=person_description, llm=llm)
 
-    # Generate a unique round ID
-    round_id = f"round_{len(game.rounds) + 1}"
+    # Create a new round
+    current_round = game.start_round(person)
 
-    # Create and assign the new round
-    current_round = Round(
-        round_id=round_id,
-        person=person,
-        question_team=team_a,
-        answer_team=team_b,
-        hint_manager=None  # Assuming you handle hints here, if needed
-    )
-
-    # Add the round to the game's rounds list
-    game.rounds.append(current_round)
-
-    # Return nested JSON response
+    # Return response
     return jsonify({
-        "round_id": round_id,
+        "round_id": current_round.round_id,
         "game_id": game_id,
         "person": {
-            "person_id": person_id,
             "name": person.name,
             "description": person.description
         },
         "teams": {
-            "team_a": {
-                "id": team_a.id,
-                "name": team_a.name
+            "llm_team": {
+                "name": game.get_llm_team().get_name()
             },
-            "team_b": {
-                "id": team_b.id,
-                "name": team_b.name
+            "guess_team": {
+                "name": game.get_guess_team().get_name()
             }
         }
     }), 200
 
 
-@game_routes.put('/game/<string:game_id>/switch_teams')
-@swag_from({
-    'summary': 'Switch Teams',
-    'description': 'Switch the roles of the teams (question team and answer team) for the next round.',
-    'parameters': [
-        {
-            'name': 'game_id',
-            'in': 'path',
-            'required': True,
-            'schema': {'type': 'string', 'example': 'game_1'}
-        }
-    ],
-    'responses': {
-        200: {
-            'description': 'Successfully switched teams.',
-            'content': {
-                'application/json': {
-                    'schema': {
-                        'type': 'object',
-                        'properties': {
-                            'game_id': {'type': 'string'},
-                            'teams': {
-                                'type': 'array',
-                                'items': {
-                                    'type': 'object',
-                                    'properties': {
-                                        'id': {'type': 'string'},
-                                        'name': {'type': 'string'}
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        404: {
-            'description': 'Game not found.'
-        }
-    }
-})
-def switch_teams(game_id):
-    # Retrieve the game by ID
-    game = games.get(game_id)
-
-    if not game:
-        return jsonify({"error": "Game not found"}), 404
-
-    # Switch the teams using the method from the Game class
-    game.switch_teams()
-
-    # Return the updated team order
-    return jsonify({
-        "game_id": game_id,
-        "teams": [{"id": team.id, "name": team.get_name()} for team in game.teams]
-    }), 200
-
-
-@game_routes.route('/game/<string:game_id>/round/<string:round_id>/ask', methods=['POST'])
+@game_routes.route('/game/<string:game_id>/round/ask', methods=['POST'])
 @swag_from({
     'summary': 'Ask a Question to a Person in a Specific Round',
-    'description': 'Ask a question to a specific person in a given round and get the LLM-generated response. Also checks if the identity was revealed.',
+    'description': 'Ask a question to a specific person in a given round and get the LLM-generated response. Also '
+                   'checks if the identity was revealed.',
     'parameters': [
         {
             'name': 'game_id',
@@ -476,13 +388,6 @@ def switch_teams(game_id):
             'required': True,
             'type': 'string',
             'example': 'game_1'
-        },
-        {
-            'name': 'round_id',
-            'in': 'path',
-            'required': True,
-            'type': 'string',
-            'example': 'round_1'
         },
         {
             'name': 'body',
@@ -510,23 +415,21 @@ def switch_teams(game_id):
             }
         },
         404: {
-            'description': 'Game, Round, or Person not found.'
+            'description': 'Game not found.'
         }
     }
 })
-def ask_question(game_id, round_id):
+def ask_question(game_id):
     # Fetch the game by ID
     game = games.get(game_id)
     if not game:
         return jsonify({"error": f"Game with ID '{game_id}' not found."}), 404
 
     # Fetch the round from the game by round_id
-    round = next((round for round in game.rounds if round.round_id == round_id), None)
-    if not round:
-        return jsonify({"error": f"Round with ID '{round_id}' not found."}), 404
+    current_round = game.get_current_round()
 
     # Ensure the person is part of the round (access the person assigned to this round)
-    person = round.person
+    person = current_round.person
     if not person:
         return jsonify({"error": "Person not found in this round."}), 404
 
@@ -536,12 +439,245 @@ def ask_question(game_id, round_id):
     if not question:
         return jsonify({"error": "Question is required."}), 400
 
-    # Ask the question to the Person instance
+    # Ask the Person instance
     response = person.ask_question(question)
     identity_revealed = person.was_identity_revealed(response.message.content)
+    is_round_finished = current_round.is_round_finished()
 
     return jsonify({
         "question": question,
         "response": response.message.content,
-        "identity_revealed": identity_revealed
+        "identity_revealed": identity_revealed,
+        "is_round_finished": is_round_finished
     })
+
+
+@game_routes.route('/game/<string:game_id>/round/make_guess', methods=['POST'])
+@swag_from({
+    'summary': 'Make a Guess',
+    'description': 'Make a guess about the person\'s identity.',
+    'parameters': [
+        {
+            'name': 'game_id',
+            'in': 'path',
+            'required': True,
+            'type': 'string',
+            'example': 'game_1'
+        },
+        {
+            'name': 'body',
+            'in': 'body',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'guess': {'type': 'string', 'example': 'Albert Einstein'}
+                },
+                'required': ['guess']
+            }
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'Guess made successfully.',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'identity_revealed': {'type': 'boolean'},
+                    'message': {'type': 'string'}
+                }
+            }
+        },
+        404: {
+            'description': 'Game not found.'
+        }
+    }
+})
+def make_guess_in_round(game_id):
+    # Fetch the game by ID
+    game = games.get(game_id)
+    if not game:
+        return jsonify({"error": f"Game with ID '{game_id}' not found."}), 404
+
+    # Fetch the round from the game by round_id
+    current_round = game.get_current_round()
+
+    data = request.json
+    guess = data.get("guess")
+    if not guess:
+        return jsonify({"error": "Guess is required."}), 400
+
+    # Make the guess
+    correct = current_round.make_guess(current_round.question_team, guess)
+    is_round_finished = current_round.is_round_finished()
+
+    return jsonify({
+        "identity_revealed": correct,
+        "message": "Correct guess!" if correct else "Incorrect guess.",
+        "is_round_finished": is_round_finished
+    })
+
+
+@game_routes.route('/game/<string:game_id>/round/use_hint', methods=['POST'])
+@swag_from({
+    'summary': 'Use a Hint',
+    'description': 'Use a hint during the round.',
+    'parameters': [
+        {
+            'name': 'game_id',
+            'in': 'path',
+            'required': True,
+            'type': 'string',
+            'example': 'game_1'
+        },
+        {
+            'name': 'body',
+            'in': 'body',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'hint_topic': {'type': 'string', 'example': 'Age'}
+                },
+                'required': ['hint_topic']
+            }
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'Hint used successfully.',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'hint': {'type': 'string'}
+                }
+            }
+        },
+        404: {
+            'description': 'Round not found.'
+        }
+    }
+})
+def use_hint_in_round(game_id):
+    # Fetch the game by ID
+    game = games.get(game_id)
+    if not game:
+        return jsonify({"error": f"Game with ID '{game_id}' not found."}), 404
+
+    # Fetch the round from the game by round_id
+    current_round = game.get_current_round()
+
+    data = request.json
+    hint_topic = data.get("hint_topic")
+    if not hint_topic:
+        return jsonify({"error": "Hint topic is required."}), 400
+
+    # Use the hint
+    hint = current_round.use_hint(current_round.question_team, hint_topic)
+    is_round_finished = current_round.is_round_finished()
+
+    return jsonify({
+        "hint": hint,
+        "is_round_finished": is_round_finished
+    })
+
+
+@game_routes.post('/game/<string:game_id>/round/end')
+@swag_from({
+    'summary': 'End the Round',
+    'description': 'Finalize the round and reset scores.',
+    'parameters': [
+        {
+            'name': 'game_id',
+            'in': 'path',
+            'required': True,
+            'type': 'string',
+            'example': 'game_1'
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'Round ended successfully.',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'round_summary': {'type': 'string'},
+                    'is_game_over': {'type': 'boolean'}
+                }
+            }
+        },
+        404: {
+            'description': 'Round not found.'
+        }
+    }
+})
+def end_round(game_id):
+    game = games.get(game_id)
+    if not game:
+        return jsonify({"error": f"Game with ID '{game_id}' not found."}), 404
+
+    round_summary = game.end_round()
+    is_game_over = game.is_game_over()
+
+    return jsonify({"round_summary": round_summary, "is_game_over": is_game_over})
+
+
+@game_routes.route('/game/<string:game_id>/end', methods=['POST'])
+@swag_from({
+    'summary': 'End the Game',
+    'description': 'Ends the game and declares the winner if applicable.',
+    'parameters': [
+        {
+            'name': 'game_id',
+            'in': 'path',
+            'required': True,
+            'type': 'string',
+            'description': 'The ID of the game to end.',
+            'example': 'game_1'
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'Game successfully ended.',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'game_id': {'type': 'string'},
+                    'is_running': {'type': 'boolean'},
+                    'final_scores': {
+                        'type': 'object',
+                        'additionalProperties': {'type': 'integer'}
+                    },
+                    'winner': {'type': 'string', 'nullable': True},
+                    'message': {'type': 'string'}
+                }
+            }
+        },
+        404: {
+            'description': 'Game not found.'
+        },
+        400: {
+            'description': 'Game already ended.'
+        }
+    }
+})
+def end_game(game_id):
+    # Fetch the game by ID
+    game = games.get(game_id)
+    if not game:
+        return jsonify({"error": f"Game with ID '{game_id}' not found."}), 404
+
+    # Check if the game is already ended
+    if not game.is_game_over():
+        return jsonify({"error": f"Game with ID '{game_id}' has already ended."}), 400
+
+    final_scores = game.get_game_score()
+    winner = game.declare_winner()
+
+    # Return the game summary
+    return jsonify({
+        "game_id": game_id,
+        "is_running": game.is_game_over(),
+        "final_scores": final_scores,
+        "winner": winner
+    }), 200
