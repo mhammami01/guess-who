@@ -84,7 +84,9 @@ def play_game(current_game):
         current_person = setup_person()
 
         # Start a new round
+        round_id = f"round_{len(game.rounds) + 1}"
         current_round = Round(
+            round_id=round_id,
             person=current_person,
             question_team=current_game.teams[0],
             answer_team=current_game.teams[1],

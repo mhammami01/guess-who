@@ -11,8 +11,8 @@ class Game:
         Represents the overall game, including managing teams, rounds, and game flow.
         """
         self.rounds = rounds
-        if len(teams) != 2:
-            raise ValueError("Number of teams must be exactly two.")
+        # if len(teams) != 2:
+        #    raise ValueError("Number of teams must be exactly two.")
         self.teams = teams
         self.max_rounds = max_rounds
         self.current_round_index = 0

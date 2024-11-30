@@ -78,3 +78,10 @@ class Person(Observable):
         :return: List of interaction dictionaries.
         """
         return self.exchange_history.get_exchange_history()
+
+    def to_dict(self):
+        # Return the person as a dictionary
+        return {
+            "name": self.name,
+            "description": self.description
+        }

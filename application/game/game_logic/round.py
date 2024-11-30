@@ -1,3 +1,5 @@
+from typing import Union
+
 from application.game.game_logic.hint_manager import HintManager
 from application.game.game_logic.person import Person
 from application.game.game_logic.team import Team
@@ -5,10 +7,11 @@ from application.game.game_logic.team import Team
 
 class Round:
     def __init__(self,
+                 round_id: str,
                  person: Person,
                  question_team: Team,
                  answer_team: Team,
-                 hint_manager: HintManager):
+                 hint_manager: Union[HintManager, None]):
         """
         Represents a single round of the game with two teams.
         :param person: LLM instance for the round.
@@ -16,6 +19,7 @@ class Round:
         :param answer_team: Second team in the round.
         :param hint_manager: hint logic manager for the round.
         """
+        self.round_id = round_id
         self.person = person
         self.question_team = question_team
         self.answer_team = answer_team
