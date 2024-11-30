@@ -22,6 +22,7 @@ class Person(Observable):
             ChatMessage(content=f"You are {self.name}. {self.description}")
         ]
         self.exchange_history = Exchange()
+        self.__identity_revealed = False
 
     def ask_question(self, question: str) -> ChatResponse:
         """
@@ -29,6 +30,8 @@ class Person(Observable):
         :param question: Question string.
         :return: Response string from the LLM.
         """
+        if self.__identity_revealed:
+            raise RuntimeError("You are already revealed.")
         try:
             # Add the user's question to the chat history as a user message
             self.chat_history.append(ChatMessage(role="user", content=question))
@@ -61,7 +64,11 @@ class Person(Observable):
         :return: True if identity clues are present, otherwise False.
         """
         # Basic check for the name in the response (could be extended)
-        return self.name.lower() in response.lower()
+        if self.__identity_revealed:
+            return True
+        else:
+            self.__identity_revealed = self.name.lower() in response.lower()
+            return self.__identity_revealed
 
     def reset_interaction_log(self):
         """

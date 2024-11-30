@@ -9,20 +9,20 @@ class Round:
     def __init__(self,
                  round_id: str,
                  person: Person,
-                 question_team: Team,
-                 answer_team: Team,
+                 llm_team: Team,
+                 guess_team: Team,
                  hint_manager: Union[HintManager, None]):
         """
         Represents a single round of the game with two teams.
         :param person: LLM instance for the round.
-        :param question_team: First team in the round.
-        :param answer_team: Second team in the round.
+        :param llm_team: First team in the round.
+        :param guess_team: Second team in the round.
         :param hint_manager: hint logic manager for the round.
         """
         self.round_id = round_id
         self.person = person
-        self.question_team = question_team
-        self.answer_team = answer_team
+        self.question_team = llm_team
+        self.answer_team = guess_team
         self.questions = []
         self.hints_used = 0
         self.hint_manager = hint_manager
@@ -105,7 +105,7 @@ class Round:
         return len(self.person.exchange_history.get_exchange_history()) >= 10
         # TODO: check more or other things???
 
-    def finish_round(self) -> None:
+    def update_total_scores_and_reset_round(self) -> None:
         self.question_team.score.update_total_score()
         self.answer_team.score.update_total_score()
         self.question_team.score.reset_round_score()

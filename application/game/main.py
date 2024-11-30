@@ -4,7 +4,6 @@ import os
 
 from application.game.game_logic.game import Game
 from application.game.game_logic.person import Person
-from application.game.game_logic.round import Round
 from application.game.game_logic.score import Score
 from application.game.game_logic.team import Team
 
@@ -76,7 +75,7 @@ def setup_game():
 # Step 2: Play Game
 def play_game(current_game):
 
-    while not current_game.check_game_over():
+    while not current_game.is_game_over():
         print(f"\n--- Starting Round {current_game.current_round_index + 1} ---")
 
         # Create a new person for the round using the existing setup_person logic
@@ -84,14 +83,7 @@ def play_game(current_game):
         current_person = setup_person()
 
         # Start a new round
-        round_id = f"round_{len(game.rounds) + 1}"
-        current_round = Round(
-            round_id=round_id,
-            person=current_person,
-            question_team=current_game.teams[0],
-            answer_team=current_game.teams[1],
-            hint_manager=current_game.hint_manager
-        )
+        current_round = current_game.start_round(current_person)
 
         # Alternate between teams
         while not current_round.is_round_finished():
@@ -128,13 +120,10 @@ def play_game(current_game):
             else:
                 print("Invalid action. Skipping turn.")
 
-        # End of round summary
+        # End round + summary
+        round_summary = current_game.end_round()
         print("\n--- End of Round ---")
-        print(current_round.get_round_summary())
-
-        current_round.finish_round()
-        current_game.switch_teams()
-        current_game.increment_round_index()
+        print(round_summary)
 
     # Declare the winner
     print("\n--- Game Over ---")
