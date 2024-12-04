@@ -7,11 +7,17 @@
 </head>
 <body>
   <section class="msger">
-    <header class="msger-header">
-      <div class="msger-header-title">Guess Who Game</div>
+    <header class="msger-header">  
+        <div class="msger-header-left">
+          <span id="teamName" class="team-bubble">Team: Unknown</span>
+        </div>
+        <div class="msger-header-title">- Guess Who Game -</div>
+        <div class="msger-header-right">
+          <span id="teamScore" class="score-bubble">Score: 0</span>
+        </div>
     </header>
 
-    <main class="msger-chat" id="chatArea">
+    <main class="msger-chat" style="background-image: url('{{ url_for('static', filename='images/background.jpg') }}');" id="chatArea">
       <div class="msg left-msg">
         <div class="msg-img" style="background-image: url('{{ url_for('static', filename='images/chatbot.svg') }}');"></div>
         <div class="msg-bubble">
@@ -20,7 +26,7 @@
             <div class="msg-info-time"></div>
           </div>
           <div class="msg-text">
-            Welcome! Group 1, please choose a character from the list below and in the next prompt add instructions to prevent easy guessing:
+            Welcome! Team 1, please choose a character from the list below and in the next prompt add instructions to prevent easy guessing:
             <br><strong>Characters:</strong> Donald Trump, Napoleon Bonaparte, Albert Einstein, Cleopatra, Leonardo da Vinci, Angela Merkel, Queen Elizabeth II, William Shakespeare.
           </div>
         </div>
@@ -29,305 +35,18 @@
 
     <form class="msger-inputarea">
       <textarea class="msger-input" id="textInput" placeholder="Enter your response..."></textarea>
-      <button type="submit" class="msger-send-btn">Send</button>
+      <button id= "guess" type="guess" class="msger-send-btn" hidden>Guess</button>
+      <button id="hint" type="hint" class="msger-send-btn"hidden >Hint</button>
+      <button itype="submit" class="msger-send-btn">Send</button>
     </form>
   </section>
-  <button id="nextGroupBtn" style="display: none; margin: 10px auto; padding: 10px 20px; font-size: 16px; cursor: pointer; background: rgb(0, 196, 65);">Give the Computer to Group 2</button>  
-
+  <button id="nextGroupBtn" style="display: none; margin: 10px auto; padding: 10px 20px; font-size: 16px; cursor: pointer; background: rgb(0, 196, 65);">Give the Computer to Group 2</button> 
+  <script src="{{ url_for('static', filename='js/game.js') }}"></script>
   <script>
-    const chatArea = document.getElementById("chatArea");
-    const msgerInput = document.getElementById("textInput");
-    const msgerForm = document.querySelector(".msger-inputarea");
-    const nextGroupBtn = document.getElementById("nextGroupBtn");
-  
     const BOT_IMG = "{{ url_for('static', filename='images/chatbot.svg') }}";
     const PERSON_IMG = "{{ url_for('static', filename='images/students.svg') }}";
-
-    let stage = 1; // Game stage (1 = character selection, 2 = guessing phase)
-    let selectedCharacter = null;
-    let constraints = "";
-    const typingSpeed = 10; // Speed in milliseconds per character
-  
-    msgerForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      sendMessage();
-    });
-
-    msgerInput.addEventListener("keydown", (event) => {
-      if (event.key === "Enter" && !event.shiftKey) {
-        event.preventDefault();
-        sendMessage();
-      }
-    });
-
-    function sendMessage() {
-      const userText = msgerInput.value.trim();
-      if (!userText) return;
-
-      appendMessage("You", PERSON_IMG, "right", userText, false);
-      msgerInput.value = "";
-
-      if (stage === 1) {
-        handleStage1(userText);
-      } else if (stage === 2) {
-        handleStage2(userText);
-      }
-    }
-  
-    function handleStage1(input) {
-      if (!selectedCharacter) {
-        selectedCharacter = input;
-        appendMessage("ChatBot", BOT_IMG, "left", `You selected "${selectedCharacter}". Now, provide instructions for the chatbot.`, true);
-      } else {
-        constraints = input;
-        appendMessage(
-          "ChatBot",
-          BOT_IMG,
-          "left",
-          `Instructions saved! When you're ready, click the button right  and give the computer to Group 2.`,
-          true
-        );
-        stage = 2;
-        nextGroupBtn.style.display = "block";
-      }
-    }
-  
-    nextGroupBtn.addEventListener("click", () => {
-      chatArea.innerHTML = "";
-      appendMessage(
-        "ChatBot",
-        BOT_IMG,
-        "left",
-        "Group 2, it's your turn! Start asking yes-or-no questions to guess the character.",
-        true
-      );
-      nextGroupBtn.style.display = "none";
-      stage = 2;
-    });
-  
-    function handleStage2(input) {
-      const botResponse = simulateBotResponse(input);
-      appendMessage("ChatBot", BOT_IMG, "left", botResponse, true);
-    }
-  
-    function simulateBotResponse(question) {
-      if (constraints.toLowerCase().includes("avoid") && question.toLowerCase().includes("is it")) {
-        return "I'm sorry, I can't answer that directly.";
-      }
-      return `Good question! Let me think... ${question} might lead to something interesting.`;
-    }
-  
-    function appendMessage(name, img, side, text, isBotMessage) {
-      const msgContainer = document.createElement("div");
-      msgContainer.className = `msg ${side}-msg`;
-  
-      const msgImg = document.createElement("div");
-      msgImg.className = "msg-img";
-      msgImg.style.backgroundImage = `url(${img})`;
-  
-      const msgBubble = document.createElement("div");
-      msgBubble.className = "msg-bubble";
-  
-      const msgInfo = document.createElement("div");
-      msgInfo.className = "msg-info";
-  
-      const msgInfoName = document.createElement("div");
-      msgInfoName.className = "msg-info-name";
-      msgInfoName.textContent = name;
-  
-      const msgInfoTime = document.createElement("div");
-      msgInfoTime.className = "msg-info-time";
-      msgInfoTime.textContent = new Date().toLocaleTimeString();
-  
-      msgInfo.appendChild(msgInfoName);
-      msgInfo.appendChild(msgInfoTime);
-  
-      const msgText = document.createElement("div");
-      msgText.className = "msg-text";
-  
-      msgBubble.appendChild(msgInfo);
-      msgBubble.appendChild(msgText);
-      msgContainer.appendChild(msgImg);
-      msgContainer.appendChild(msgBubble);
-  
-      chatArea.appendChild(msgContainer);
-      chatArea.scrollTop += 500;
-  
-      if (isBotMessage) {
-        displayTextWithTypingEffect(msgText, text);
-      } else {
-        msgText.textContent = text;
-      }
-    }
-  
-    function displayTextWithTypingEffect(element, text) {
-      let i = 0;
-      const interval = setInterval(() => {
-        element.textContent += text[i];
-        i++;
-        if (i >= text.length) clearInterval(interval);
-      }, typingSpeed);
-    }
   </script>
+  <!-- Link the external CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </body>
-<style>
-    :root {
-  --body-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  --msger-bg: #fff;
-  --border: 2px solid #ddd;
-  --left-msg-bg: #ececec;
-  --right-msg-bg: #c87231;
-}
-
-html {
-  box-sizing: border-box;
-}
-
-*,
-*:before,
-*:after {
-  margin: 0;
-  padding: 0;
-  box-sizing: inherit;
-}
-
-body {
-  display: flex; 
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-image: var(--body-bg);
-  font-family: Helvetica, sans-serif;
-}
-
-.msger {
-  display: flex;
-  flex-flow: column wrap;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 867px;
-  margin: 25px 10px;
-  height: calc(100% - 50px);
-  border: var(--border);
-  border-radius: 5px;
-  background: var(--msger-bg);
-  box-shadow: 0 15px 15px -5px rgba(0, 0, 0, 0.2);
-}
-
-.msger-header {
-  font-size: medium;
-  justify-content: space-between;
-  padding: 10px;
-  text-align: center;
-  border-bottom: var(--border);
-  background: #eee;
-  color: #666;
-}
-
-.msger-chat {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px;
-}
-.msger-chat::-webkit-scrollbar {
-  width: 6px;
-}
-.msger-chat::-webkit-scrollbar-track {
-  background: #ddd;
-}
-.msger-chat::-webkit-scrollbar-thumb {
-  background: #bdbdbd;
-}
-.msg {
-  display: flex;
-  align-items: flex-end;
-  margin-bottom: 10px;
-}
-
-.msg-img {
-  width: 50px;
-  height: 50px;
-  margin-right: 10px;
-  background: #ddd;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: cover;
-  border-radius: 50%;
-}
-.msg-bubble {
-  max-width: 450px;
-  padding: 15px;
-  border-radius: 15px;
-  background: var(--left-msg-bg);
-}
-.msg-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-.msg-info-name {
-  margin-right: 10px;
-  font-weight: bold;
-}
-.msg-info-time {
-  font-size: 0.85em;
-}
-
-.left-msg .msg-bubble {
-  border-bottom-left-radius: 0;
-}
-
-.right-msg {
-  flex-direction: row-reverse;
-}
-.right-msg .msg-bubble {
-  background: var(--right-msg-bg);
-  color: #fff;
-  border-bottom-right-radius: 0;
-}
-.right-msg .msg-img {
-  margin: 0 0 0 10px;
-}
-
-.msger-inputarea {
-  display: flex;
-  padding: 10px;
-  border-top: var(--border);
-  background: #eee;
-}
-.msger-inputarea * {
-  padding: 10px;
-  border: none;
-  border-radius: 3px;
-  font-size: 1em;
-}
-.msger-input {
-  flex: 1;
-  resize: none;
-  min-height: 50px;
-  max-height: 150px;
-  overflow-y: auto;
-  background: #ddd;
-}
-.msger-send-btn {
-  margin-left: 10px;
-  background: rgb(0, 196, 65);
-  color: #fff;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.23s;
-}
-.msger-send-btn:hover {
-  background: rgb(0, 180, 50);
-}
-
-.msger-chat {
-  background-color: #fcfcfe;
-  background-image: url("{{ url_for('static', filename='images/background.jpg') }}");
-  background-size: cover; /* Ensures the image covers the entire container */
-  background-repeat: no-repeat; /* Prevents the image from repeating */
-  background-position: center;
-}
-</style>
-</html>
+</html>  

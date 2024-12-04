@@ -3,86 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guess who Game</title>
-    
+    <title>Guess Who Game</title>
 </head>
 <body>
-    <!--img src="logo.jpg" alt="Guess Who Logo" class="logo" TODO later-->
-    <!--We can add more informations later about llms or the game itself -->
-    <div class="info">
-        <h1>Welcome to Guess Who Game!</h1>
-        <p>
-            Do you want to interract with LLMs? Our game will offer you this Chance
-        <p>
-           Have fun!
-        </p>
-    </div>
+    <section class="msger">
+        <header class="msger-header">
+            <div class="msger-header-title">Guess Who Game - Setup</div>
+        </header>
 
-    <div class="startbutton">
-        <button class="start" onclick="navigateTo('game')">Start the game</button>
-    </div>
+        <main class="msger-chat" style="background-image: url('{{ url_for('static', filename='images/background.jpg') }}');" id="chatArea">
+            <div class="msg left-msg">
+                <div class="msg-img" style="background-image: url('{{ url_for('static', filename='images/chatbot.svg') }}');"></div>
+                <div class="msg-bubble">
+                    <div class="msg-info">
+                        <div class="msg-info-name">ChatBot</div>
+                        <div class="msg-info-time"></div>
+                    </div>
+                    <div class="msg-text">
+                        Welcome to the Guess Who Game! Please set up your game by entering the team names and selecting the number of rounds.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Setup Form -->
+            <div class="game-setup">
+                <form id="gameSetupForm">
+                    <div class="form-group">
+                        <label for="team1Name">Team 1 Name:</label>
+                        <input type="text" id="team1Name" name="team1Name" placeholder="Enter Team 1 Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="team2Name">Team 2 Name:</label>
+                        <input type="text" id="team2Name" name="team2Name" placeholder="Enter Team 2 Name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="rounds">Number of Rounds:</label>
+                        <select id="rounds" name="rounds" required>
+                            <option value="" disabled selected>Select Rounds</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                        </select>
+                    </div>
+                    <div class="startbutton">
+                        <button class="msger-send-btn" type="submit">Start the Game</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </section>
 
     <script>
-        function navigateTo(page) {
-            // Redirect to the selected  page
-            window.location.href = page;
-        }
+        document.getElementById("gameSetupForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+    
+            // Get form values
+            const team1Name = document.getElementById("team1Name").value.trim();
+            const team2Name = document.getElementById("team2Name").value.trim();
+            const rounds = parseInt(document.getElementById("rounds").value, 10);
+    
+            if (!team1Name || !team2Name || isNaN(rounds)) {
+                alert("Please provide valid team names and select the number of rounds.");
+                return;
+            }
+    
+            // Prepare the API payload
+            const payload = {
+            "is_running": true,
+            "max_rounds": rounds,
+            "team_a_name": team1Name,
+            "team_b_name": team2Name
+            }
+    
+            try {
+                // Make the POST request to the /game API
+                const response = await fetch('/game', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+    
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Game created:", data);
+    
+                    // Redirect to the main game page or update the interface dynamically
+                    alert(`Game started! Game ID: ${data.game_id}`);
+                    // Optionally redirect to a new page
+                    window.location.href = `/game?id=${data.game_id}&r=${rounds}&t1=${team1Name}&t2=${team2Name}`;
+                } else {
+                    const errorData = await response.json();
+                    console.error("Error creating game:", errorData);
+                    alert("Failed to create the game. Please try again.");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("An error occurred while starting the game.");
+            }
+        });
     </script>
+    
 </body>
 <style>
+    :root {
+        --body-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        --msger-bg: #fff;
+        --border: 2px solid #ddd;
+        --left-msg-bg: #ececec;
+        --right-msg-bg: #c87231;
+    }
+
+    html {
+        box-sizing: border-box;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: inherit;
+    }
+
     body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-image: var(--body-bg);
+        font-family: Helvetica, sans-serif;
+    }
+
+    .msger {
+        display: flex;
+        flex-flow: column wrap;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 867px;
+        margin: 25px 10px;
+        height: calc(100% - 50px);
+        border: var(--border);
+        border-radius: 5px;
+        background: var(--msger-bg);
+        box-shadow: 0 15px 15px -5px rgba(0, 0, 0, 0.2);
+    }
+
+    .msger-header {
+        font-size: medium;
+        justify-content: space-between;
+        padding: 10px;
         text-align: center;
+        border-bottom: var(--border);
+        background: #eee;
+        color: #666;
+    }
+
+    .msger-chat {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px;
+    }
+
+    .game-setup {
         margin: 20px;
-        background-color: #f5f5f5;
+        text-align: left;
     }
 
-    h1 {
-        color: #3366cc;
-        margin-bottom: 10px;
-    }
-
-    p {
+    .form-group {
         margin-bottom: 15px;
-        line-height: 1.6;
     }
 
-    .logo {
-        max-width: 100%;
-        height: auto;
-        margin-bottom: 20px;
+    label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
     }
 
-    .info {
-        text-align: justify;
-        max-width: 800px;
-        margin: 0 auto;
+    input, select {
+        width: 100%;
+        padding: 8px;
+        font-size: 16px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
     }
 
     .startbutton {
         text-align: center;
-        margin-top: 20px;
     }
 
-    .start {
-        display: inline-block;
-        margin: 10px;
-        padding: 12px 24px;
-        font-size: 18px;
+    .msger-send-btn {
+        padding: 10px 20px;
+        font-size: 16px;
         cursor: pointer;
-        text-align: center;
-        text-decoration: none;
-        outline: none;
+        background: rgb(0, 196, 65);
         color: #fff;
-        background-color: #4CAF50;
         border: none;
         border-radius: 5px;
-        box-shadow: 0 4px #357a38;
-        transition: background-color 0.3s ease;
+        transition: background 0.3s;
     }
 
-    .start:hover {
-        background-color: #45a049;
+    .msger-send-btn:hover {
+        background: rgb(0, 180, 50);
     }
 </style>
 </html>

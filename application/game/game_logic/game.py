@@ -6,7 +6,7 @@ from application.game.game_logic.team import Team
 
 
 class Game:
-    def __init__(self, rounds: List[Round], teams: List[Team], max_rounds: int, hint_data_source=None):
+    def __init__(self, rounds: List[Round], teams: List[Team], max_rounds: int, is_running: bool, hint_data_source=None):
         """
         Represents the overall game, including managing teams, rounds, and game flow.
         """
@@ -17,6 +17,7 @@ class Game:
         self.max_rounds = max_rounds
         self.current_round_index = 0
         self.hint_manager = HintManager(hint_data_source)
+        self.is_running = is_running
 
     def start_round(self, person) -> Round:
         """
