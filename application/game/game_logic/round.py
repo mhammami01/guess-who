@@ -8,7 +8,7 @@ from application.game.game_logic.team import Team
 class Round:
     def __init__(self,
                  round_id: str,
-                 person: Person,
+                 person: Union[Person, None],
                  llm_team: Team,
                  guess_team: Team,
                  hint_manager: Union[HintManager, None]):
@@ -29,7 +29,27 @@ class Round:
         self.was_person_revealed = False
 
         # Register this round as an observer to the person
-        self.person.add_observer(self)
+        if self.person is not None:
+            self.person.add_observer(self)
+
+    def to_dict(self):
+        return {
+            "round_id": self.round_id,
+            "person": {
+                "name": self.person.name,
+                "description": self.person.description
+            } if self.person else None,
+            "llm_team": {
+                "name": self.question_team.get_name()
+            },
+            "guess_team": {
+                "name": self.answer_team.get_name()
+            },
+            "hints_used": self.hints_used,
+            "was_person_revealed": self.was_person_revealed,
+            "questions": self.questions,
+            "is_finished": self.is_round_finished()
+        }
 
     def update(self, event, **kwargs):
         """
@@ -102,7 +122,8 @@ class Round:
             return True
 
         # Check if the maximum number of questions has been reached
-        return len(self.person.exchange_history.get_exchange_history()) >= 10
+        if self.person and hasattr(self.person, 'exchange_history') and self.person.exchange_history:
+            return len(self.person.exchange_history.get_exchange_history()) >= 10
         # TODO: check more or other things???
 
     def update_total_scores_and_reset_round(self) -> None:

@@ -19,7 +19,7 @@ class Game:
         self.hint_manager = HintManager(hint_data_source)
         self.is_running = is_running
 
-    def start_round(self, person) -> Round:
+    def start_round(self) -> Round:
         """
         Start a new round with two teams.
         :param person: an LLM Person who needs to be guessed.
@@ -29,13 +29,23 @@ class Game:
         # game_round = Round(round_id, person, team1, team2, self.hint_manager)
         game_round = Round(
             round_id=round_id,
-            person=person,
+            person=None,
             llm_team=self.teams[0],
             guess_team=self.teams[1],
             hint_manager=self.hint_manager
         )
         self.rounds.append(game_round)
         return game_round
+
+    def add_person_to_current_round(self, person):
+        """
+        Add a person to the current round.
+        :param person: an LLM Person who needs to be guessed.
+        """
+        current_round = self.get_current_round()
+        if current_round.person is not None:
+            raise RuntimeError("The current round already has a person assigned.")
+        current_round.person = person
 
     def end_round(self):
         round_summary = self.get_current_round().get_round_summary()

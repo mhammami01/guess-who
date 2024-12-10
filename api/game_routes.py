@@ -259,8 +259,8 @@ def get_game_status(game_id):
             {
                 "round_id": game_round.round_id,
                 "person": {
-                    "name": game_round.person.name,
-                    "description": game_round.person.description
+                    "name": game_round.person.name if game_round.person else "Not yet assigned",
+                    "description": game_round.person.description if game_round.person else "Not yet assigned"
                 },
                 "status": 'finished' if game_round.is_round_finished() else 'in_progress',
                 "llm_team": {
@@ -287,18 +287,6 @@ def get_game_status(game_id):
             'in': 'path',
             'required': True,
             'schema': {'type': 'string', 'example': 'game_1'}
-        },
-        {
-            'name': 'body',
-            'in': 'body',
-            'required': True,
-            'schema': {
-                'type': 'object',
-                'properties': {
-                    'person_name': {'type': 'string', 'example': 'Albert Einstein'}
-                },
-                'required': ['person_name']
-            }
         }
     ],
     'responses': {
@@ -309,13 +297,6 @@ def get_game_status(game_id):
                 'properties': {
                     'round_id': {'type': 'string', 'example': 'round_1'},
                     'game_id': {'type': 'string'},
-                    'person': {
-                        'type': 'object',
-                        'properties': {
-                            'name': {'type': 'string'},
-                            'description': {'type': 'string'}
-                        }
-                    },
                     'teams': {
                         'type': 'object',
                         'properties': {
@@ -342,28 +323,19 @@ def get_game_status(game_id):
     }
 })
 def start_round(game_id):
-    # Parse JSON data
-    data = request.json
-    person_name = data.get("person_name")
 
     # Fetch the game by its ID
     game = games.get(game_id)
     if not game:
         return jsonify({"error": f"Game with ID '{game_id}' not found."}), 404
 
-    person = persons.get(person_name)
-
     # Create a new round
-    current_round = game.start_round(person)
+    current_round = game.start_round()
 
     # Return response
     return jsonify({
         "round_id": current_round.round_id,
         "game_id": game_id,
-        "person": {
-            "name": person.name,
-            "description": person.description
-        },
         "teams": {
             "llm_team": {
                 "name": game.get_llm_team().get_name()
@@ -375,11 +347,17 @@ def start_round(game_id):
     }), 200
 
 
-@game_routes.route('/person', methods=['POST'])
+@game_routes.route('/game/<string:game_id>/round/add_person', methods=['POST'])
 @swag_from({
-    'summary': 'Create a new Person',
+    'summary': 'Create a new Person and add it to the game round',
     'description': 'Creates a new person for assigning to a game round.',
     'parameters': [
+        {
+            'name': 'game_id',
+            'in': 'path',
+            'required': True,
+            'schema': {'type': 'string', 'example': 'game_1'}
+        },
         {
             'name': 'body',
             'in': 'body',
@@ -388,30 +366,54 @@ def start_round(game_id):
                 'type': 'object',
                 'properties': {
                     'person_name': {'type': 'string', 'example': 'Albert Einstein'},
-                    'person_description': {'type': 'string', 'example': 'Do not reveal your identity.'},
+                    'person_description': {'type': 'string', 'example': 'Do not reveal your identity.'}
                 },
                 'required': ['person_name', 'person_description']
             }
         }
     ],
     'responses': {
-        201: {
-            'description': 'Person created successfully.',
+        200: {
+            'description': 'Person created and added to round successfully.',
             'schema': {
                 'type': 'object',
                 'properties': {
-                    'person_id': {'type': 'string', 'example': 'person_1'},
-                    'name': {'type': 'string'},
-                    'description': {'type': 'string'}
+                    'round_id': {'type': 'string'},
+                    'person': {
+                        'type': 'object',
+                        'properties': {
+                            'name': {'type': 'string'},
+                            'description': {'type': 'string'}
+                        }
+                    }
                 }
             }
+        },
+        404: {
+            'description': 'Game or Round not found.'
+        },
+        400: {
+            'description': 'Person with the same name already exists.'
         }
     }
 })
-def create_person():
+def create_person_and_add_to_round(game_id):
     data = request.json
     person_name = data.get("person_name")
     person_description = data.get("person_description")
+
+    # Fetch the game and round
+    game = games.get(game_id)
+    if not game:
+        return jsonify({"error": f"Game with ID '{game_id}' not found."}), 404
+
+    current_round = game.get_current_round()
+    if not current_round:
+        return jsonify({"error": f"Round with ID '{current_round}' not found."}), 404
+
+    # Check if the person already exists
+    if person_name in persons:
+        return jsonify({"error": f"Person with name '{person_name}' already exists."}), 400
 
     # Initialize the Person instance
     llm = initialise_llm_for_api()
@@ -420,11 +422,17 @@ def create_person():
     # Store the person in the in-memory dictionary
     persons[person_name] = person
 
+    # Add the person to the round
+    game.add_person_to_current_round(person)
+
     # Return response
     return jsonify({
-        "name": person.name,
-        "description": person.description
-    }), 201
+        "round": current_round.to_dict(),
+        "person": {
+            "name": person.name,
+            "description": person.description
+        }
+    }), 200
 
 
 @game_routes.route('/game/<string:game_id>/round/ask', methods=['POST'])
