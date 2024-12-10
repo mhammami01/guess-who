@@ -19,6 +19,9 @@ game_routes = Blueprint('game_routes', __name__)
 # In-memory storage for active games
 games: Dict[str, Game] = {}
 
+# in-memory storage for LLM persons
+persons: Dict[str, Person] = {}
+
 
 # Initialize LLM instance
 def initialise_llm_for_api():
@@ -292,10 +295,9 @@ def get_game_status(game_id):
             'schema': {
                 'type': 'object',
                 'properties': {
-                    'person_name': {'type': 'string', 'example': 'Albert Einstein'},
-                    'person_description': {'type': 'string', 'example': 'Do not reveal your identity.'},
+                    'person_name': {'type': 'string', 'example': 'Albert Einstein'}
                 },
-                'required': ['person_name', 'person_description']
+                'required': ['person_name']
             }
         }
     ],
@@ -335,7 +337,7 @@ def get_game_status(game_id):
             }
         },
         404: {
-            'description': 'Game or Team not found.'
+            'description': 'Game or Team or Person not found.'
         }
     }
 })
@@ -343,16 +345,13 @@ def start_round(game_id):
     # Parse JSON data
     data = request.json
     person_name = data.get("person_name")
-    person_description = data.get("person_description")
 
     # Fetch the game by its ID
     game = games.get(game_id)
     if not game:
         return jsonify({"error": f"Game with ID '{game_id}' not found."}), 404
 
-    # Initialize the Person instance
-    llm = initialise_llm_for_api()  # Create LLM instance if needed
-    person = Person(name=person_name, description=person_description, llm=llm)
+    person = persons.get(person_name)
 
     # Create a new round
     current_round = game.start_round(person)
@@ -374,6 +373,58 @@ def start_round(game_id):
             }
         }
     }), 200
+
+
+@game_routes.route('/person', methods=['POST'])
+@swag_from({
+    'summary': 'Create a new Person',
+    'description': 'Creates a new person for assigning to a game round.',
+    'parameters': [
+        {
+            'name': 'body',
+            'in': 'body',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'person_name': {'type': 'string', 'example': 'Albert Einstein'},
+                    'person_description': {'type': 'string', 'example': 'Do not reveal your identity.'},
+                },
+                'required': ['person_name', 'person_description']
+            }
+        }
+    ],
+    'responses': {
+        201: {
+            'description': 'Person created successfully.',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'person_id': {'type': 'string', 'example': 'person_1'},
+                    'name': {'type': 'string'},
+                    'description': {'type': 'string'}
+                }
+            }
+        }
+    }
+})
+def create_person():
+    data = request.json
+    person_name = data.get("person_name")
+    person_description = data.get("person_description")
+
+    # Initialize the Person instance
+    llm = initialise_llm_for_api()
+    person = Person(name=person_name, description=person_description, llm=llm)
+
+    # Store the person in the in-memory dictionary
+    persons[person_name] = person
+
+    # Return response
+    return jsonify({
+        "name": person.name,
+        "description": person.description
+    }), 201
 
 
 @game_routes.route('/game/<string:game_id>/round/ask', methods=['POST'])
