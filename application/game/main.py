@@ -58,7 +58,7 @@ def setup_game_parameters(teams):
     print("Configuring game parameters...")
     max_rounds = int(input("Enter the maximum number of rounds: "))
     hint_data_source = None  # Adjust with real hint source
-    game_setup = Game(rounds=[], teams=teams, max_rounds=max_rounds, hint_data_source=hint_data_source)
+    game_setup = Game(rounds=[], teams=teams, max_rounds=max_rounds, is_running=True, hint_data_source=hint_data_source)
     print(f"Game set up with max rounds: {max_rounds}")
     return game_setup
 
@@ -83,7 +83,8 @@ def play_game(current_game):
         current_person = setup_person()
 
         # Start a new round
-        current_round = current_game.start_round(current_person)
+        current_round = current_game.start_round()
+        current_game.add_person_to_current_round(current_person)
 
         # Alternate between teams
         while not current_round.is_round_finished():
