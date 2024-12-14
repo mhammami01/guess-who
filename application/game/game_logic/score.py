@@ -7,7 +7,7 @@ class Score:
         self.round_score = initial_points
         self.total_score = 0
 
-    def deduct(self, points: int):
+    def deduct(self, points: float):
         """
         Deduct points from the score.
         :param points: Number of points to deduct.

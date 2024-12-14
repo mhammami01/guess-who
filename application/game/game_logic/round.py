@@ -1,5 +1,7 @@
 from typing import Union
 
+from llama_index.core.base.llms.types import ChatResponse
+
 from application.game.game_logic.hint_manager import HintManager
 from application.game.game_logic.person import Person
 from application.game.game_logic.team import Team
@@ -27,10 +29,6 @@ class Round:
         self.hints_used = 0
         self.hint_manager = hint_manager
         self.was_person_revealed = False
-
-        # Register this round as an observer to the person
-        if self.person is not None:
-            self.person.add_observer(self)
 
     def to_dict(self):
         return {
@@ -81,6 +79,21 @@ class Round:
         else:
             team.score.deduct(1)
             return False
+
+    def ask_question(self, question: str) -> ChatResponse:
+        """
+        Handle asking a question, deducting a point from the question team, and getting the response.
+        """
+        # Deduct point from the guessing team
+        self.question_team.score.deduct(1)
+
+        response = self.person.ask_question_to_llm(question)
+
+        if self.person.was_identity_revealed(response):
+            self.was_person_revealed = True
+
+        # Ask question via the Person class
+        return response
 
     def get_round_summary(self):
         """

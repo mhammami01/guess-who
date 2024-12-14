@@ -101,7 +101,7 @@ def play_game(current_game):
             if action == "1":
                 # Ask a question
                 question = input("Enter your question: ")
-                current_person.ask_question(question)
+                current_round.ask_question(question)
                 # print(f"Person responds: {response}")
 
             elif action == "2":

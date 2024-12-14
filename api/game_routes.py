@@ -499,7 +499,7 @@ def ask_question(game_id):
         return jsonify({"error": "Question is required."}), 400
 
     # Ask the Person instance
-    response = person.ask_question(question)
+    response = current_round.ask_question(question)
     identity_revealed = person.was_identity_revealed(response.message.content)
     is_round_finished = current_round.is_round_finished()
 
