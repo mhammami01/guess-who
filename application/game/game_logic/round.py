@@ -62,7 +62,7 @@ class Round:
         try:
             hint = self.hint_manager.generate_hint(self.person, hint_topic)
             self.hints_used += 1
-            team.score.deduct(1)
+            team.score.deduct(0.5)
             return hint
         except Exception as e:
             return f"Error providing hint: {e}"
