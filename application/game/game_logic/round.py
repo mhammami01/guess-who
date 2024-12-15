@@ -3,6 +3,7 @@ from application.game.game_logic.hint_manager import HintManager
 from application.game.game_logic.person import Person
 from application.game.game_logic.team import Team
 from application.game.observer_logic.observer import Observable
+from llama_index.core.llms import ChatResponse
 
 
 class Round(Observable):
@@ -29,18 +30,11 @@ class Round(Observable):
         self.add_observer(llm_team)
         self.add_observer(guess_team)
 
-        # Observe the person for events
-        if self.person is not None:
-            self.person.add_observer(self)
-
     def update(self, event, **kwargs):
         """
         Handle events from the person or other observers.
         """
-        if event == "identity_revealed":
-            self.was_person_revealed = True
-            self.notify_observers(event, **kwargs)
-        elif event == "question_responded":
+        if event == "question_responded":
             self.notify_observers(event, **kwargs)
 
     def to_dict(self):
@@ -84,7 +78,7 @@ class Round(Observable):
         :param guess: The guessed name of the person.
         :return: True if the guess is correct, otherwise False.
         """
-        if guess.lower() == self.person.name.lower():
+        if self.was_identity_revealed(guess):
             self.was_person_revealed = True
             return True
         else:
@@ -107,7 +101,15 @@ class Round(Observable):
 
         response = self.person.ask_question_to_llm(question)
 
-        if self.person.was_identity_revealed(response.message.content):
+        if self.was_identity_revealed(response.message.content):
+            self.was_person_revealed = True
+            return True
+
+        return False
+
+    def was_identity_revealed(self, message: str) -> bool:
+        if self.person.name.lower() in message.lower().strip():
+            self.was_person_revealed = True
             return True
         return False
 
