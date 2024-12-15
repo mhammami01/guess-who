@@ -2,8 +2,10 @@ from application.game.game_logic.exchange import Exchange
 from llama_index.llms.openai import OpenAI
 from llama_index.core.llms import ChatMessage, ChatResponse
 
+from application.game.observer_logic.observer import Observable
 
-class Person:
+
+class Person(Observable):
     def __init__(self, name: str, description: str, llm: OpenAI):
         """
         Represents the person the LLM emulates and manages LLM interactions.
@@ -43,14 +45,18 @@ class Person:
             # Save the interaction in exchange history
             self.exchange_history.add_exchange(question, response_content)
 
+            # Check if identity is revealed
+            if self.was_identity_revealed(response_content):
+                self.__identity_revealed = True
+                self.notify_observers("identity_revealed", response=response_content)
+
+            # Notify observers about the question response
+            self.notify_observers("question_responded", question=question, response=response_content)
+
             print(response)
 
         except Exception as e:
             response = f"Error during LLM query: {e}"
-
-            # Notify observers if the identity is revealed
-        # if self.was_identity_revealed(response_content):
-        #    self.notify_observers(event="identity_revealed", response=response_content)
 
         return response
 

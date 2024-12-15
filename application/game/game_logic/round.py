@@ -1,7 +1,4 @@
 from typing import Union
-
-from llama_index.core.base.llms.types import ChatResponse
-
 from application.game.game_logic.hint_manager import HintManager
 from application.game.game_logic.person import Person
 from application.game.game_logic.team import Team
@@ -32,6 +29,20 @@ class Round(Observable):
         self.add_observer(llm_team)
         self.add_observer(guess_team)
 
+        # Observe the person for events
+        if self.person is not None:
+            self.person.add_observer(self)
+
+    def update(self, event, **kwargs):
+        """
+        Handle events from the person or other observers.
+        """
+        if event == "identity_revealed":
+            self.was_person_revealed = True
+            self.notify_observers(event, **kwargs)
+        elif event == "question_responded":
+            self.notify_observers(event, **kwargs)
+
     def to_dict(self):
         return {
             "round_id": self.round_id,
@@ -50,13 +61,6 @@ class Round(Observable):
             "questions": self.questions,
             "is_finished": self.is_round_finished()
         }
-
-    def update(self, event, **kwargs):
-        """
-        Handle events from the observable (Person).
-        """
-        if event == "identity_revealed":
-            self.was_person_revealed = True
 
     def use_hint(self, hint_topic):
         try:
@@ -91,7 +95,7 @@ class Round(Observable):
                                   guess=guess)
             return False
 
-    def ask_question(self, question: str) -> ChatResponse:
+    def ask_question(self, question: str) -> bool:
         """
         Handle asking a question, deducting a point from the question team, and getting the response.
         """
@@ -104,10 +108,8 @@ class Round(Observable):
         response = self.person.ask_question_to_llm(question)
 
         if self.person.was_identity_revealed(response.message.content):
-            self.was_person_revealed = True
-
-        # Ask question via the Person class
-        return response
+            return True
+        return False
 
     def get_round_summary(self):
         """
