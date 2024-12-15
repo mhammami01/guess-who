@@ -5,14 +5,11 @@ from llama_index.core.base.llms.types import ChatResponse
 from application.game.game_logic.hint_manager import HintManager
 from application.game.game_logic.person import Person
 from application.game.game_logic.team import Team
+from application.game.observer_logic.observer import Observable
 
 
-class Round:
-    def __init__(self,
-                 round_id: str,
-                 person: Union[Person, None],
-                 llm_team: Team,
-                 guess_team: Team,
+class Round(Observable):
+    def __init__(self, round_id: str, person: Union[Person, None], llm_team: Team, guess_team: Team,
                  hint_manager: Union[HintManager, None]):
         """
         Represents a single round of the game with two teams.
@@ -21,6 +18,7 @@ class Round:
         :param guess_team: Second team in the round.
         :param hint_manager: hint logic manager for the round.
         """
+        super().__init__()
         self.round_id = round_id
         self.person = person
         self.question_team = llm_team
@@ -29,6 +27,10 @@ class Round:
         self.hints_used = 0
         self.hint_manager = hint_manager
         self.was_person_revealed = False
+
+        # Add teams as observers
+        self.add_observer(llm_team)
+        self.add_observer(guess_team)
 
     def to_dict(self):
         return {
@@ -60,8 +62,11 @@ class Round:
         try:
             hint = self.hint_manager.generate_hint(self.person, hint_topic)
             self.hints_used += 1
-            self.question_team.score.deduct(0.5)
-            self.answer_team.score.add(0.5)
+            self.notify_observers("hint_used",
+                                  deduct_team=self.question_team,
+                                  add_team=self.answer_team,
+                                  points=0.5,
+                                  hint_topic=hint_topic)
             return hint
         except Exception as e:
             return f"Error providing hint: {e}"
@@ -79,17 +84,22 @@ class Round:
             self.was_person_revealed = True
             return True
         else:
-            self.question_team.score.deduct(1)
-            self.answer_team.score.add(1)
+            self.notify_observers("guess_incorrect",
+                                  deduct_team=self.question_team,
+                                  add_team=self.answer_team,
+                                  points=1.0,
+                                  guess=guess)
             return False
 
     def ask_question(self, question: str) -> ChatResponse:
         """
         Handle asking a question, deducting a point from the question team, and getting the response.
         """
-        # Deduct point from the guessing team
-        self.question_team.score.deduct(1)
-        self.answer_team.score.add(1)
+        self.notify_observers("question_asked",
+                              deduct_team=self.question_team,
+                              add_team=self.answer_team,
+                              points=1.0,
+                              question=question)
 
         response = self.person.ask_question_to_llm(question)
 
@@ -106,12 +116,6 @@ class Round:
         """
         team1_score = self.question_team.get_round_score()
         team2_score = self.answer_team.get_round_score()
-
-        # winner = None
-        # if team1_score > team2_score:
-        #     winner = self.question_team.get_name()
-        # elif team2_score > team1_score:
-        #     winner = self.answer_team.get_name()
 
         # Log round details
         round_summary = {

@@ -6,6 +6,28 @@ class Team:
         self.name = name
         self.score = score
 
+    def update(self, event, **kwargs):
+        """
+        React to events from the Round, updating scores as needed.
+        """
+        if event == "hint_used":
+            if kwargs.get("deduct_team") == self:
+                self.score.deduct(kwargs.get("points", 0))
+            elif kwargs.get("add_team") == self:
+                self.score.add(kwargs.get("points", 0))
+
+        elif event == "guess_incorrect":
+            if kwargs.get("deduct_team") == self:
+                self.score.deduct(kwargs.get("points", 0))
+            elif kwargs.get("add_team") == self:
+                self.score.add(kwargs.get("points", 0))
+
+        elif event == "question_asked":
+            if kwargs.get("deduct_team") == self:
+                self.score.deduct(kwargs.get("points", 0))
+            elif kwargs.get("add_team") == self:
+                self.score.add(kwargs.get("points", 0))
+
     def get_total_score(self):
         """
         Return the current total score of the team.
