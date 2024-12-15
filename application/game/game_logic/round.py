@@ -56,20 +56,22 @@ class Round:
         if event == "identity_revealed":
             self.was_person_revealed = True
 
-    def use_hint(self, team, hint_topic):
+    def use_hint(self, hint_topic):
         try:
             hint = self.hint_manager.generate_hint(self.person, hint_topic)
             self.hints_used += 1
-            team.score.deduct(0.5)
+            self.question_team.score.deduct(0.5)
+            self.answer_team.score.add(0.5)
             return hint
         except Exception as e:
             return f"Error providing hint: {e}"
 
-    def make_guess(self, team: Team, guess: str) -> bool:
+    def make_guess(self, guess: str) -> bool:
         """
         Allow a team to guess the identity of the person.
         Deduct a point if the guess is incorrect.
-        :param team: The team making the guess.
+        :param llm_team: The team instructing the LLM.
+        :param guess_team: The team making the guess.
         :param guess: The guessed name of the person.
         :return: True if the guess is correct, otherwise False.
         """
@@ -77,7 +79,8 @@ class Round:
             self.was_person_revealed = True
             return True
         else:
-            team.score.deduct(1)
+            self.question_team.score.deduct(1)
+            self.answer_team.score.add(1)
             return False
 
     def ask_question(self, question: str) -> ChatResponse:
@@ -86,10 +89,11 @@ class Round:
         """
         # Deduct point from the guessing team
         self.question_team.score.deduct(1)
+        self.answer_team.score.add(1)
 
         response = self.person.ask_question_to_llm(question)
 
-        if self.person.was_identity_revealed(response):
+        if self.person.was_identity_revealed(response.message.content):
             self.was_person_revealed = True
 
         # Ask question via the Person class

@@ -107,13 +107,13 @@ def play_game(current_game):
             elif action == "2":
                 # Use a hint
                 hint_topic = input("Enter a topic for the hint: ")
-                hint = current_round.use_hint(current_round.question_team, hint_topic)
+                hint = current_round.use_hint(hint_topic)
                 print(f"Hint: {hint}")
 
             elif action == "3":
                 # Make a guess
                 guess = input("Enter your guess: ")
-                if current_round.make_guess(current_round.question_team, guess):
+                if current_round.make_guess(guess):
                     print(f"Correct! The person is {current_person.name}.")
                     current_round.was_person_revealed = True
                 else:
