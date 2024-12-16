@@ -41,7 +41,7 @@ def setup_teams():
     teams = []
     # First team set up
     first_team_name = input("Enter the name for Team A: ")
-    first_team_score = Score(10)
+    first_team_score = Score(float(os.getenv("ROUND_POINTS")))
     teams.append(Team(name=first_team_name, score=first_team_score))
 
     # Second team set up
@@ -140,5 +140,6 @@ def play_game(current_game):
 
 
 if __name__ == "__main__":
+    load_dotenv()
     game = setup_game()
     play_game(game)

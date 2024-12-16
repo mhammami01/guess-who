@@ -1,4 +1,7 @@
+import os
 from typing import Union
+
+from dotenv import load_dotenv
 
 from application.game.game_logic.exchange_history import Exchange
 from application.game.game_logic.hint_manager import HintManager
@@ -30,6 +33,8 @@ class Round(Observable):
         # Add teams as observers
         self.add_observer(llm_team)
         self.add_observer(guess_team)
+
+        load_dotenv()
 
     def update(self, event, **kwargs):
         """
@@ -64,7 +69,7 @@ class Round(Observable):
             self.notify_observers("hint_used",
                                   deduct_team=self.question_team,
                                   add_team=self.answer_team,
-                                  points=0.5,
+                                  points=float(os.getenv("POINTS_FOR_HINT")),
                                   hint_topic=hint_topic)
             # Save the interaction in exchange history
             self.exchange_history.add_exchange(f"hint about {hint_topic} generated.", hint)
@@ -88,7 +93,7 @@ class Round(Observable):
             self.notify_observers("guess_incorrect",
                                   deduct_team=self.question_team,
                                   add_team=self.answer_team,
-                                  points=1.0,
+                                  points=float(os.getenv("POINTS_FOR_GUESS")),
                                   guess=guess)
             self.exchange_history.add_exchange(guess, f"Wrong guess.")
             return False
@@ -100,7 +105,7 @@ class Round(Observable):
         self.notify_observers("question_asked",
                               deduct_team=self.question_team,
                               add_team=self.answer_team,
-                              points=1.0,
+                              points=float(os.getenv("POINTS_FOR_QUESTION")),
                               question=question)
 
         response = self.person.ask_question_to_llm(question)
@@ -159,7 +164,7 @@ class Round(Observable):
 
         # Check if the maximum number of questions has been reached
         if self.exchange_history:
-            return len(self.exchange_history.get_exchange_history()) == 10
+            return len(self.exchange_history.get_exchange_history()) == float(os.getenv("MAX_EXCHANGE_LENGTH"))
         # TODO: check more or other things???
 
     def update_total_scores_and_reset_round(self) -> None:
@@ -168,7 +173,7 @@ class Round(Observable):
         self.question_team.score.reset_round_score()
         self.answer_team.score.reset_round_score()
         # Assign 10 points to the new guessing team (current answer team)
-        self.answer_team.score.reset(new_points=10)
+        self.answer_team.score.reset(new_points=float(os.getenv("ROUND_POINTS")))
         self.person.reset_interaction_log()
         self.exchange_history.clear_exchange_history()
         self.hints_used = 0

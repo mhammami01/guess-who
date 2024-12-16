@@ -10,23 +10,24 @@ class Team:
         """
         React to events from the Round, updating scores as needed.
         """
+        points = float(kwargs.get("points", 0))
         if event == "hint_used":
             if kwargs.get("deduct_team") == self:
-                self.score.deduct(kwargs.get("points", 0))
+                self.score.deduct(points)
             elif kwargs.get("add_team") == self:
-                self.score.add(kwargs.get("points", 0))
+                self.score.add(points)
 
         elif event == "guess_incorrect":
             if kwargs.get("deduct_team") == self:
-                self.score.deduct(kwargs.get("points", 0))
+                self.score.deduct(points)
             elif kwargs.get("add_team") == self:
-                self.score.add(kwargs.get("points", 0))
+                self.score.add(points)
 
         elif event == "question_asked":
             if kwargs.get("deduct_team") == self:
-                self.score.deduct(kwargs.get("points", 0))
+                self.score.deduct(points)
             elif kwargs.get("add_team") == self:
-                self.score.add(kwargs.get("points", 0))
+                self.score.add(points)
 
     def get_total_score(self):
         """
