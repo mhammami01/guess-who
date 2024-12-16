@@ -1,4 +1,4 @@
-from application.game.game_logic.exchange import Exchange
+from application.game.game_logic.exchange_history import Exchange
 from llama_index.llms.openai import OpenAI
 from llama_index.core.llms import ChatMessage, ChatResponse
 
@@ -18,7 +18,6 @@ class Person:
         self.chat_history = [
             ChatMessage(content=f"You are {self.name}. {self.description}")
         ]
-        self.exchange_history = Exchange()
         self.__identity_revealed = False
 
     def ask_question_to_llm(self, question: str) -> ChatResponse:
@@ -40,9 +39,6 @@ class Person:
             response_content = response.message.content
             self.chat_history.append(ChatMessage(role="assistant", content=response_content))
 
-            # Save the interaction in exchange history
-            self.exchange_history.add_exchange(question, response_content)
-
             print(response)
 
         except Exception as e:
@@ -54,17 +50,9 @@ class Person:
         """
         Reset the interaction log for a new round by clearing the existing history.
         """
-        self.exchange_history.clear_exchange_history()
         self.chat_history = [
             ChatMessage(role="system", content=f"You are {self.name}. {self.description}")
         ]
-
-    def get_interaction_log(self) -> list:
-        """
-        Retrieve the interaction log.
-        :return: List of interaction dictionaries.
-        """
-        return self.exchange_history.get_exchange_history()
 
     def to_dict(self):
         # Return the person as a dictionary

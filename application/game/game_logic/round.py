@@ -1,9 +1,10 @@
 from typing import Union
+
+from application.game.game_logic.exchange_history import Exchange
 from application.game.game_logic.hint_manager import HintManager
 from application.game.game_logic.person import Person
 from application.game.game_logic.team import Team
 from application.game.observer_logic.observer import Observable
-from llama_index.core.llms import ChatResponse
 
 
 class Round(Observable):
@@ -21,10 +22,10 @@ class Round(Observable):
         self.person = person
         self.question_team = llm_team
         self.answer_team = guess_team
-        self.questions = []
         self.hints_used = 0
         self.hint_manager = hint_manager
         self.was_person_revealed = False
+        self.exchange_history = Exchange()
 
         # Add teams as observers
         self.add_observer(llm_team)
@@ -52,7 +53,7 @@ class Round(Observable):
             },
             "hints_used": self.hints_used,
             "was_person_revealed": self.was_person_revealed,
-            "questions": self.questions,
+            "exchange_history": self.exchange_history,
             "is_finished": self.is_round_finished()
         }
 
@@ -65,6 +66,8 @@ class Round(Observable):
                                   add_team=self.answer_team,
                                   points=0.5,
                                   hint_topic=hint_topic)
+            # Save the interaction in exchange history
+            self.exchange_history.add_exchange(f"hint about {hint_topic} generated.", hint)
             return hint
         except Exception as e:
             return f"Error providing hint: {e}"
@@ -73,13 +76,13 @@ class Round(Observable):
         """
         Allow a team to guess the identity of the person.
         Deduct a point if the guess is incorrect.
-        :param llm_team: The team instructing the LLM.
-        :param guess_team: The team making the guess.
         :param guess: The guessed name of the person.
         :return: True if the guess is correct, otherwise False.
         """
         if self.was_identity_revealed(guess):
             self.was_person_revealed = True
+            # Save the interaction in exchange history
+            self.exchange_history.add_exchange(guess, f"{guess} was revealed.")
             return True
         else:
             self.notify_observers("guess_incorrect",
@@ -87,6 +90,7 @@ class Round(Observable):
                                   add_team=self.answer_team,
                                   points=1.0,
                                   guess=guess)
+            self.exchange_history.add_exchange(guess, f"Wrong guess.")
             return False
 
     def ask_question(self, question: str) -> bool:
@@ -100,6 +104,10 @@ class Round(Observable):
                               question=question)
 
         response = self.person.ask_question_to_llm(question)
+        response_content = response.message.content
+
+        # Save the interaction in exchange history
+        self.exchange_history.add_exchange(question, response_content)
 
         if self.was_identity_revealed(response.message.content):
             self.was_person_revealed = True
@@ -126,8 +134,7 @@ class Round(Observable):
             'team1': {'name': self.question_team.get_name(), 'round_score': team1_score},
             'team2': {'name': self.answer_team.get_name(), 'round_score': team2_score},
             'hints_used': self.hints_used,
-            'interaction_log': self.person.get_interaction_log(),
-            # 'winner': winner
+            'interaction_log': self.exchange_history.get_exchange_history()
         }
 
         return round_summary
@@ -147,8 +154,8 @@ class Round(Observable):
             return True
 
         # Check if the maximum number of questions has been reached
-        if self.person and hasattr(self.person, 'exchange_history') and self.person.exchange_history:
-            return len(self.person.exchange_history.get_exchange_history()) >= 10
+        if self.exchange_history:
+            return len(self.exchange_history.get_exchange_history()) == 10
         # TODO: check more or other things???
 
     def update_total_scores_and_reset_round(self) -> None:
@@ -159,5 +166,6 @@ class Round(Observable):
         # Assign 10 points to the new guessing team (current answer team)
         self.answer_team.score.reset(new_points=10)
         self.person.reset_interaction_log()
+        self.exchange_history.clear_exchange_history()
         self.hints_used = 0
         # TODO: More?

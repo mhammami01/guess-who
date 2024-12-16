@@ -8,7 +8,7 @@ class Exchange:
         """
         self.exchange_history = []
 
-    def add_exchange(self, question: str, response: ChatResponse):
+    def add_exchange(self, question: str, response: str):
         """
         Add a question and response pair to the exchange.
         :param question: The question asked.
