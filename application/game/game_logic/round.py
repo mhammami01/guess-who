@@ -153,6 +153,10 @@ class Round(Observable):
         if self.was_person_revealed:
             return True
 
+        # Check if the current question team's round score is 0
+        if self.question_team.get_round_score() == 0:
+            return True
+
         # Check if the maximum number of questions has been reached
         if self.exchange_history:
             return len(self.exchange_history.get_exchange_history()) == 10
