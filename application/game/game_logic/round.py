@@ -58,7 +58,7 @@ class Round(Observable):
             },
             "hints_used": self.hints_used,
             "was_person_revealed": self.was_person_revealed,
-            "exchange_history": self.exchange_history,
+            "exchange_history": self.exchange_history.to_dict(),
             "is_finished": self.is_round_finished()
         }
 

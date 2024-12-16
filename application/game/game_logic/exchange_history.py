@@ -29,6 +29,12 @@ class Exchange:
         """
         self.exchange_history = []
 
+    def to_dict(self) -> dict:
+        """
+        Converts the exchange to a dictionary for JSON serialization.
+        """
+        return {"exchange_history": self.exchange_history}
+
     def __str__(self):
         """
         String representation for printing exchange.

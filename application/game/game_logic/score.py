@@ -1,5 +1,5 @@
 class Score:
-    def __init__(self, initial_points):
+    def __init__(self, initial_points: float):
         """
         Represents the score for a round or a team.
         :param initial_points: Starting points for the score (default is 10).
@@ -12,7 +12,7 @@ class Score:
         Deduct points from the score.
         :param points: Number of points to deduct.
         """
-        self.round_score = max(0, self.round_score - points)
+        self.round_score = max(0.0, self.round_score - points)
 
     def add(self, points: float):
         """

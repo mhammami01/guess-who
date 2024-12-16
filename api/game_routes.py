@@ -132,7 +132,7 @@ def create_game():
     game_id = f"game_{len(games) + 1}"
 
     # Create team objects with initial scores
-    team_a = Team(name=team_a_name, score=Score(initial_points=10))
+    team_a = Team(name=team_a_name, score=Score(initial_points=float(os.getenv("ROUND_POINTS"))))
     team_b = Team(name=team_b_name, score=Score(initial_points=0))
 
     # Retrieve is_running from the JSON, default to False if not provided
@@ -247,6 +247,7 @@ def get_game_status(game_id):
     # Prepare the game status response
     game_status = {
         "game_id": game_id,
+        "game_status": 'finished' if game.is_game_over() else 'in_progress',
         "teams": [
             {
                 "name": team.name,
@@ -262,7 +263,7 @@ def get_game_status(game_id):
                     "name": game_round.person.name if game_round.person else "Not yet assigned",
                     "description": game_round.person.description if game_round.person else "Not yet assigned"
                 },
-                "status": 'finished' if game_round.is_round_finished() else 'in_progress',
+                "round_status": 'finished' if game_round.is_round_finished() else 'in_progress',
                 "llm_team": {
                     "name": game_round.question_team.name
                 },
@@ -335,6 +336,7 @@ def start_round(game_id):
     # Return response
     return jsonify({
         "round_id": current_round.round_id,
+        "is_finished": current_round.is_round_finished(),
         "game_id": game_id,
         "teams": {
             "llm_team": {
@@ -500,13 +502,12 @@ def ask_question(game_id):
 
     # Ask the Person instance
     response = current_round.ask_question(question)
-    identity_revealed = person.was_identity_revealed(response.message.content)
     is_round_finished = current_round.is_round_finished()
 
     return jsonify({
         "question": question,
-        "response": response.message.content,
-        "identity_revealed": identity_revealed,
+        # "response": response.message.content,
+        "identity_revealed": response,
         "is_round_finished": is_round_finished
     })
 
@@ -567,7 +568,7 @@ def make_guess_in_round(game_id):
         return jsonify({"error": "Guess is required."}), 400
 
     # Make the guess
-    correct = current_round.make_guess(current_round.question_team, guess)
+    correct = current_round.make_guess(guess)
     is_round_finished = current_round.is_round_finished()
 
     return jsonify({
@@ -632,7 +633,7 @@ def use_hint_in_round(game_id):
         return jsonify({"error": "Hint topic is required."}), 400
 
     # Use the hint
-    hint = current_round.use_hint(current_round.question_team, hint_topic)
+    hint = current_round.use_hint(hint_topic)
     is_round_finished = current_round.is_round_finished()
 
     return jsonify({
@@ -676,9 +677,9 @@ def end_round(game_id):
         return jsonify({"error": f"Game with ID '{game_id}' not found."}), 404
 
     round_summary = game.end_round()
-    is_game_over = game.is_game_over()
+    # is_game_over = game.is_game_over()
 
-    return jsonify({"round_summary": round_summary, "is_game_over": is_game_over})
+    return jsonify({"round_summary": round_summary})
 
 
 @game_routes.route('/game/<string:game_id>/end', methods=['POST'])
@@ -727,7 +728,7 @@ def end_game(game_id):
         return jsonify({"error": f"Game with ID '{game_id}' not found."}), 404
 
     # Check if the game is already ended
-    if not game.is_game_over():
+    if game.is_game_over():
         return jsonify({"error": f"Game with ID '{game_id}' has already ended."}), 400
 
     final_scores = game.get_game_score()

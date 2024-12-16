@@ -72,8 +72,7 @@ class Game:
         Check if the game is over.
         :return: True if the game is over, otherwise False.
         """
-        return (len(self.rounds) > self.max_rounds
-                or (len(self.rounds) == self.max_rounds and self.get_current_round().is_round_finished()))
+        return len(self.rounds) == self.max_rounds and self.get_current_round().is_round_finished()
 
     def declare_winner(self):
         """
