@@ -589,18 +589,6 @@ def make_guess_in_round(game_id):
             'required': True,
             'type': 'string',
             'example': 'game_1'
-        },
-        {
-            'name': 'body',
-            'in': 'body',
-            'required': True,
-            'schema': {
-                'type': 'object',
-                'properties': {
-                    'hint_topic': {'type': 'string', 'example': 'Age'}
-                },
-                'required': ['hint_topic']
-            }
         }
     ],
     'responses': {
@@ -627,13 +615,8 @@ def use_hint_in_round(game_id):
     # Fetch the round from the game by round_id
     current_round = game.get_current_round()
 
-    data = request.json
-    hint_topic = data.get("hint_topic")
-    if not hint_topic:
-        return jsonify({"error": "Hint topic is required."}), 400
-
     # Use the hint
-    hint = current_round.use_hint(hint_topic)
+    hint = current_round.use_hint()
     is_round_finished = current_round.is_round_finished()
 
     return jsonify({

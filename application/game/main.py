@@ -107,8 +107,7 @@ def play_game(current_game):
 
             elif action == "2":
                 # Use a hint
-                hint_topic = input("Enter a topic for the hint: ")
-                hint = current_round.use_hint(hint_topic)
+                hint = current_round.use_hint()
                 print(f"Hint: {hint}")
 
             elif action == "3":

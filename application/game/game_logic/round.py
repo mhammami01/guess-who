@@ -12,7 +12,7 @@ from application.game.observer_logic.observer import Observable
 
 class Round(Observable):
     def __init__(self, round_id: str, person: Union[Person, None], llm_team: Team, guess_team: Team,
-                 hint_manager: Union[HintManager, None]):
+                 hint_manager: HintManager):
         """
         Represents a single round of the game with two teams.
         :param person: LLM instance for the round.
@@ -62,17 +62,16 @@ class Round(Observable):
             "is_finished": self.is_round_finished()
         }
 
-    def use_hint(self, hint_topic):
+    def use_hint(self):
         try:
-            hint = self.hint_manager.generate_hint(self.person, hint_topic)
+            hint = self.hint_manager.generate_hint()
             self.hints_used += 1
             self.notify_observers("hint_used",
                                   deduct_team=self.question_team,
                                   add_team=self.answer_team,
-                                  points=float(os.getenv("POINTS_FOR_HINT")),
-                                  hint_topic=hint_topic)
+                                  points=float(os.getenv("POINTS_FOR_HINT")))
             # Save the interaction in exchange history
-            self.exchange_history.add_exchange(f"hint about {hint_topic} generated.", hint)
+            self.exchange_history.add_exchange("hint generated:", hint)
             return hint
         except Exception as e:
             return f"Error providing hint: {e}"

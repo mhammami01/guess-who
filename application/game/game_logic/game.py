@@ -16,7 +16,7 @@ class Game:
         self.teams = teams
         self.max_rounds = max_rounds
         self.current_round_index = 0
-        self.hint_manager = HintManager(hint_data_source)
+        self.hint_manager = HintManager()
         self.is_running = is_running
 
     def start_round(self) -> Round:
