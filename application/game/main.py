@@ -4,6 +4,7 @@ import os
 
 from application.game.game_logic.game import Game
 from application.game.game_logic.person import Person
+from application.game.game_logic.quiz_manager import QuizManager
 from application.game.game_logic.score import Score
 from application.game.game_logic.team import Team
 
@@ -57,8 +58,7 @@ def setup_teams():
 def setup_game_parameters(teams):
     print("Configuring game parameters...")
     max_rounds = int(input("Enter the maximum number of rounds: "))
-    hint_data_source = None  # Adjust with real hint source
-    game_setup = Game(rounds=[], teams=teams, max_rounds=max_rounds, is_running=True, hint_data_source=hint_data_source)
+    game_setup = Game(rounds=[], teams=teams, max_rounds=max_rounds, is_running=True)
     print(f"Game set up with max rounds: {max_rounds}")
     return game_setup
 
@@ -125,6 +125,36 @@ def play_game(current_game):
         round_summary = current_game.end_round()
         print("\n--- End of Round ---")
         print(round_summary)
+    print("\n--- Main Game Over ---")
+
+    # Conduct the bonus quiz
+    print("\n--- Bonus Quiz Round ---")
+
+    # Initialize QuizManager with the teams
+    quiz_manager = QuizManager(current_game.teams)
+
+    # Start the quiz
+    quiz_manager.start_quiz()
+
+    while quiz_manager.is_running:
+        # Get the current question and team
+        question_info = quiz_manager.get_next_question()
+        if isinstance(question_info, dict):
+            team_name = question_info["team"]
+            question = question_info["question"]
+            print(f"\nTeam {team_name}, it's your turn!")
+            print(f"Question: {question}")
+
+            # Simulate getting an answer (replace input function as needed)
+            answer = input("Your answer: ").strip()
+
+            # Submit the answer and get the result
+            result = quiz_manager.submit_answer(answer)
+            print(result)
+        else:
+            # If the quiz has ended, break the loop
+            print(question_info)
+            break
 
     # Declare the winner
     print("\n--- Game Over ---")

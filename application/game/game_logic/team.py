@@ -15,19 +15,25 @@ class Team:
             if kwargs.get("deduct_team") == self:
                 self.score.deduct(points)
             elif kwargs.get("add_team") == self:
-                self.score.add(points)
+                self.score.add_to_round_score(points)
 
         elif event == "guess_incorrect":
             if kwargs.get("deduct_team") == self:
                 self.score.deduct(points)
             elif kwargs.get("add_team") == self:
-                self.score.add(points)
+                self.score.add_to_round_score(points)
 
         elif event == "question_asked":
             if kwargs.get("deduct_team") == self:
                 self.score.deduct(points)
             elif kwargs.get("add_team") == self:
-                self.score.add(points)
+                self.score.add_to_round_score(points)
+
+        elif event == "bonus_point_scored":
+            team_name = kwargs.get("team_name")
+            # Check if the event is for this team
+            if team_name == self.name:  # If the team name matches
+                self.score.add_to_total_score(points)  # Add points to the team's total score
 
     def get_total_score(self):
         """

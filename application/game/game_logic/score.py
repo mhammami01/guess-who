@@ -14,12 +14,15 @@ class Score:
         """
         self.round_score = max(0.0, self.round_score - points)
 
-    def add(self, points: float):
+    def add_to_round_score(self, points: float):
         """
         Add points to the score.
         :param points: Number of points to add.
         """
         self.round_score += points
+
+    def add_to_total_score(self, points: float):
+        self.total_score += points
 
     def reset(self, new_points=10):
         """

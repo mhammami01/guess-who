@@ -1,16 +1,13 @@
 import os
-import uuid
 from typing import List, Dict
 
 from dotenv import load_dotenv
 from flasgger import swag_from
 from flask import Blueprint, request, jsonify
 from llama_index.llms.openai import OpenAI
-
-from api.team_routes import teams
 from application.game.game_logic.game import Game
 from application.game.game_logic.person import Person
-from application.game.game_logic.round import Round
+from application.game.game_logic.quiz_manager import QuizManager
 from application.game.game_logic.score import Score
 from application.game.game_logic.team import Team
 
@@ -21,6 +18,9 @@ games: Dict[str, Game] = {}
 
 # in-memory storage for LLM persons
 persons: Dict[str, Person] = {}
+
+# In-memory storage for active quizzes
+quizzes: Dict[str, QuizManager] = {}
 
 
 # Initialize LLM instance
@@ -190,6 +190,8 @@ def create_game():
                 'type': 'object',
                 'properties': {
                     'game_id': {'type': 'string'},
+                    'game_status': {'type': 'string'},
+                    'quiz_status': {'type': 'string'},
                     'teams': {
                         'type': 'array',
                         'items': {
@@ -244,10 +246,13 @@ def get_game_status(game_id):
     if not game:
         return jsonify({"error": f"Game with ID '{game_id}' not found."}), 404
 
+    quiz_manager = quizzes.get(game_id)
+
     # Prepare the game status response
     game_status = {
         "game_id": game_id,
         "game_status": 'finished' if game.is_game_over() else 'in_progress',
+        "quiz_status": 'active' if quiz_manager and quiz_manager.is_running else 'not_active',
         "teams": [
             {
                 "name": team.name,
@@ -324,7 +329,6 @@ def get_game_status(game_id):
     }
 })
 def start_round(game_id):
-
     # Fetch the game by its ID
     game = games.get(game_id)
     if not game:
@@ -665,29 +669,29 @@ def end_round(game_id):
     return jsonify({"round_summary": round_summary})
 
 
-@game_routes.route('/game/<string:game_id>/end', methods=['POST'])
+@game_routes.route('/game/<string:game_id>/winner', methods=['POST'])
 @swag_from({
-    'summary': 'End the Game',
-    'description': 'Ends the game and declares the winner if applicable.',
+    'summary': 'Declare Winner',
+    'description': 'Determines and signals the winner of the game without ending the game.',
     'parameters': [
         {
             'name': 'game_id',
             'in': 'path',
             'required': True,
             'type': 'string',
-            'description': 'The ID of the game to end.',
+            'description': 'The ID of the game to declare a winner.',
             'example': 'game_1'
         }
     ],
     'responses': {
         200: {
-            'description': 'Game successfully ended.',
+            'description': 'Winner successfully declared.',
             'schema': {
                 'type': 'object',
                 'properties': {
                     'game_id': {'type': 'string'},
                     'is_running': {'type': 'boolean'},
-                    'final_scores': {
+                    'current_scores': {
                         'type': 'object',
                         'additionalProperties': {'type': 'integer'}
                     },
@@ -698,29 +702,169 @@ def end_round(game_id):
         },
         404: {
             'description': 'Game not found.'
-        },
-        400: {
-            'description': 'Game already ended.'
         }
     }
 })
-def end_game(game_id):
+def declare_winner(game_id):
     # Fetch the game by ID
     game = games.get(game_id)
     if not game:
         return jsonify({"error": f"Game with ID '{game_id}' not found."}), 404
 
-    # Check if the game is already ended
-    if game.is_game_over():
-        return jsonify({"error": f"Game with ID '{game_id}' has already ended."}), 400
-
-    final_scores = game.get_game_score()
+    current_scores = game.get_game_score()
     winner = game.declare_winner()
 
-    # Return the game summary
+    # Return the winner
     return jsonify({
         "game_id": game_id,
-        "is_running": game.is_game_over(),
-        "final_scores": final_scores,
-        "winner": winner
+        "current_scores": current_scores,
+        "winner": winner,
+        "message": "Winner declared successfully."
     }), 200
+
+
+@game_routes.route('/game/<string:game_id>/quiz/start', methods=['POST'])
+@swag_from({
+    'summary': 'Start a Bonus Quiz',
+    'description': 'Starts a bonus quiz for the specified game, initializing the state and shuffling questions.',
+    'parameters': [
+        {
+            'name': 'game_id',
+            'in': 'path',
+            'required': True,
+            'type': 'string',
+            'description': 'Unique identifier for the game.',
+            'example': 'game_1'
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'Quiz started successfully.',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'message': {'type': 'string'}
+                }
+            }
+        },
+        404: {
+            'description': 'Game not found.'
+        }
+    }
+})
+def start_quiz(game_id):
+    game = games.get(game_id)
+    if not game:
+        return jsonify({"error": f"Game with ID '{game_id}' not found."}), 404
+
+    # Initialize a QuizManager for the game if not already present
+    if game_id not in quizzes:
+        quizzes[game_id] = QuizManager(game.teams)
+
+    quiz_manager = quizzes[game_id]
+    quiz_manager.start_quiz()
+
+    return jsonify({"message": "Quiz started successfully."}), 200
+
+
+@game_routes.route('/game/<string:game_id>/quiz/next', methods=['GET'])
+@swag_from({
+    'summary': 'Get Next Quiz Question',
+    'description': 'Fetches the next question for the current team in the bonus quiz.',
+    'parameters': [
+        {
+            'name': 'game_id',
+            'in': 'path',
+            'required': True,
+            'type': 'string',
+            'description': 'Unique identifier for the game.',
+            'example': 'game_1'
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'Next question retrieved successfully.',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'team': {'type': 'string'},
+                    'question': {'type': 'string'}
+                }
+            }
+        },
+        404: {
+            'description': 'Quiz not found.'
+        },
+        400: {
+            'description': 'Quiz is not active.'
+        }
+    }
+})
+def get_next_question(game_id):
+    quiz_manager = quizzes.get(game_id)
+    if not quiz_manager:
+        return jsonify({"error": f"Quiz for game ID '{game_id}' not found."}), 404
+
+    next_question = quiz_manager.get_next_question()
+    if isinstance(next_question, str):
+        return jsonify({"error": next_question}), 400
+
+    return jsonify(next_question), 200
+
+
+@game_routes.route('/game/<string:game_id>/quiz/answer', methods=['POST'])
+@swag_from({
+    'summary': 'Submit Quiz Answer',
+    'description': 'Submits an answer for the current question in the bonus quiz.',
+    'parameters': [
+        {
+            'name': 'game_id',
+            'in': 'path',
+            'required': True,
+            'type': 'string',
+            'description': 'Unique identifier for the game.',
+            'example': 'game_1'
+        },
+        {
+            'name': 'body',
+            'in': 'body',
+            'required': True,
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'answer': {'type': 'string', 'example': 'Paris'}
+                },
+                'required': ['answer']
+            }
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'Answer submitted and processed.',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'result': {'type': 'string'}
+                }
+            }
+        },
+        404: {
+            'description': 'Quiz not found.'
+        },
+        400: {
+            'description': 'Quiz is not active.'
+        }
+    }
+})
+def submit_answer(game_id):
+    quiz_manager = quizzes.get(game_id)
+    if not quiz_manager:
+        return jsonify({"error": f"Quiz for game ID '{game_id}' not found."}), 404
+
+    data = request.json
+    answer = data.get("answer")
+    if not answer:
+        return jsonify({"error": "Answer is required."}), 400
+
+    result = quiz_manager.submit_answer(answer)
+    return jsonify({"result": result}), 200

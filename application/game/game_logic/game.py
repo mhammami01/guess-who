@@ -3,6 +3,7 @@ from typing import List, Dict
 from application.game.game_logic.hint_manager import HintManager
 from application.game.game_logic.round import Round
 from application.game.game_logic.team import Team
+from application.game.observer_logic.observer import Observable
 
 
 class Game:
@@ -22,7 +23,6 @@ class Game:
     def start_round(self) -> Round:
         """
         Start a new round with two teams.
-        :param person: an LLM Person who needs to be guessed.
         """
 
         round_id = f"round_{len(self.rounds) + 1}"
@@ -66,6 +66,46 @@ class Game:
         :return: Dictionary with team names as keys and their scores as values.
         """
         return {team.get_name(): team.get_total_score() for team in self.teams}
+
+    # def conduct_bonus_quiz(self):
+    #     """
+    #     Conducts a bonus quiz for both teams, where teams take turns answering questions.
+    #     Correct answers earn 1 point each.
+    #     """
+    #     quiz_questions = [
+    #         {"question": "What is the capital of France?", "answer": "Paris"},
+    #         {"question": "What is 5 + 7?", "answer": "12"},
+    #         {"question": "What is the color of the sky on a clear day?", "answer": "blue"},
+    #         {"question": "Who wrote '1984'?", "answer": "George Orwell"},
+    #         {"question": "What is the largest planet in our solar system?", "answer": "Jupiter"}
+    #     ]
+    #
+    #     # Shuffle questions to ensure randomness
+    #     import random
+    #     random.shuffle(quiz_questions)
+    #
+    #     total_questions = len(quiz_questions)
+    #     question_index = 0
+    #     while question_index < total_questions and quiz_questions:
+    #         for team in self.teams:
+    #             if not quiz_questions:
+    #                 break
+    #
+    #             question = quiz_questions.pop(0)
+    #             print(f"\nTeam {team.get_name()}, it's your turn!")
+    #             print(f"Question: {question['question']}")
+    #             answer = input("Your answer: ").strip().lower()
+    #
+    #             if answer == question["answer"].lower():
+    #                 print("Correct!")
+    #                 self.notify_observers("bonus_point_scored", **{"team_name": team.get_name(), "points": 1})
+    #             else:
+    #                 print(f"Wrong. The correct answer was {question['answer']}.")
+    #
+    #             question_index += 1
+    #
+    #             if question_index >= total_questions:
+    #                 break
 
     def is_game_over(self) -> bool:
         """
