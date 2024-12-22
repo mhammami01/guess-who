@@ -1,11 +1,12 @@
 import os
-from typing import List, Dict
+from typing import Dict
 
 from dotenv import load_dotenv
 from flasgger import swag_from
 from flask import Blueprint, request, jsonify
 from llama_index.llms.openai import OpenAI
 from application.game.game_logic.game import Game
+from application.game.game_logic.llm import LLMInitializer
 from application.game.game_logic.person import Person
 from application.game.game_logic.quiz_manager import QuizManager
 from application.game.game_logic.score import Score
@@ -21,15 +22,6 @@ persons: Dict[str, Person] = {}
 
 # In-memory storage for active quizzes
 quizzes: Dict[str, QuizManager] = {}
-
-
-# Initialize LLM instance
-def initialise_llm_for_api():
-    load_dotenv()
-    openai_api_key = os.getenv("OPENAI_API_KEY")
-    if not openai_api_key:
-        raise ValueError("OPENAI_API_KEY is not set in the environment.")
-    return OpenAI(model_name="gpt-4o-mini", openai_api_key=openai_api_key)
 
 
 @game_routes.route('/game', methods=['POST'])
@@ -422,7 +414,7 @@ def create_person_and_add_to_round(game_id):
         return jsonify({"error": f"Person with name '{person_name}' already exists."}), 400
 
     # Initialize the Person instance
-    llm = initialise_llm_for_api()
+    llm = LLMInitializer.initialise_llm()
     person = Person(name=person_name, description=person_description, llm=llm)
 
     # Store the person in the in-memory dictionary

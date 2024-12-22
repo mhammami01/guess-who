@@ -1,36 +1,19 @@
-from llama_index.llms.openai import OpenAI
 from dotenv import load_dotenv
 import os
-
 from application.game.game_logic.game import Game
+from application.game.game_logic.llm import LLMInitializer
 from application.game.game_logic.person import Person
 from application.game.game_logic.quiz_manager import QuizManager
 from application.game.game_logic.score import Score
 from application.game.game_logic.team import Team
 
 
-def initialise_llm_for_testing():
-    # Load environment variables
-    load_dotenv()
-
-    # Ensure the API key is set
-    openai_api_key = os.getenv("OPENAI_API_KEY")
-    if not openai_api_key:
-        raise ValueError("OPENAI_API_KEY is not set in the environment.")
-
-    # Initialize the OpenAI model
-    model = OpenAI(
-        model_name="gpt-4o-mini",  # Specify the OpenAI model
-        openai_api_key=openai_api_key  # Pass the API key
-    )
-    return model
-
-
 # Step 1a: Setup Person
 def setup_person():
     person_name = input("Enter the name of the person to be guessed: ")
     person_description = input("Enter a system message for the person to be guessed: ")
-    llm = initialise_llm_for_testing()
+
+    llm = LLMInitializer.initialise_llm()
     person_llm = Person(name=person_name, description=person_description, llm=llm)
     print(f"Person set up: {person_llm.name}")
     return person_llm
