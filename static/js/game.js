@@ -82,7 +82,20 @@ nextGroupBtn.addEventListener("click", () => {
     nextGroupBtn.style.display = "none";
     hintBtn.style.display = "block";
     GuessBtn.style.display = "block";
+    startBonusQuizBtn.style.display = "block";
     stage = 2;
+});
+
+const startBonusQuizBtn = document.getElementById("startBonusQuiz");
+
+startBonusQuizBtn.addEventListener("click", () => {
+    chatArea.innerHTML = "";
+
+    // Construct the URL to redirect to the bonus quiz page with the game_id
+    const redirectUrl = `/game/${gameId}/bonus-quiz`;
+
+    // Redirect the user to the bonus quiz page
+    window.location.href = redirectUrl;
 });
 
 function handleStage2(input) {
