@@ -8,9 +8,6 @@ app = Flask(__name__)
 # Initialize Flasgger (Swagger UI)
 swagger = Swagger(app)
 
-# Register the API Blueprints (ensure these are registered properly)
-app.register_blueprint(game_routes)
-
 
 @app.route('/')
 def home():
@@ -21,6 +18,14 @@ def home():
 def game():
     return render_template('game.html')
 
+
+@app.route('/game/<string:game_id>/bonus-quiz', methods=['GET'])
+def bonus_quiz(game_id):
+    return render_template('bonus_quiz.html', game_id=game_id)
+
+
+# Register the API Blueprints (ensure these are registered properly)
+app.register_blueprint(game_routes)
 
 if __name__ == '__main__':
     app.run(debug=True)

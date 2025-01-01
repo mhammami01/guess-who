@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bonus Quiz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <section class="msger">
+        <header class="msger-header">
+            <div class="msger-header-left">
+                <span id="teamName" class="team-bubble">Team: unknown</span>
+            </div>
+            <div class="msger-header-title">- Bonus Quiz -</div>
+            <div class="msger-header-right">
+                <span id="teamScore" class="score-bubble">Score: 0</span>
+            </div>
+        </header>
+
+        <main class="msger-chat" style="background-image: url('{{ url_for('static', filename='images/background.jpg') }}');" id="quizArea">
+        </main>
+
+        <form class="msger-inputarea" id="quizForm" style="display: none;">
+            <div class="input-container">
+                <textarea class="msger-input" id="quizAnswer" placeholder="Enter your answer here..."></textarea>
+                <button type="submit" class="msger-send-btn">Submit</button>
+            </div>
+        </form>
+
+        <div class="startbutton" id="startQuizButton">
+            <button class="msger-send-btn" onclick="startQuiz()">Start Quiz</button>
+        </div>
+
+        <button id="nextGroupBtn" style="display: none; margin: 10px auto; padding: 10px 20px; font-size: 16px; cursor: pointer; background: rgb(0, 196, 65);">Give the Computer to Group 2</button>
+        <button id="startBonusQuiz" style="display: none; margin: 10px auto; padding: 10px 20px; font-size: 16px; cursor: pointer; background: rgb(0, 196, 65);">Start Bonus Quiz</button>
+    </section>
+
+    <script>
+        const gameId = "{{ game_id }}";
+        const quizApiUrl = `/game/${gameId}/quiz`;
+        const chatBotImg = "{{ url_for('static', filename='images/chatbot.svg') }}";
+        const studentImg = "{{ url_for('static', filename='images/students.svg') }}";
+    </script>
+    <script src="{{ url_for('static', filename='js/bonus_quiz.js') }}"></script>
+</body>
+</html>
