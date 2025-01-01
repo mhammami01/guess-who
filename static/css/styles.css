@@ -158,6 +158,7 @@
     background: #eee;
   }
   .msger-inputarea * {
+    display: flex;
     padding: 10px;
     border: none;
     border-radius: 3px;
