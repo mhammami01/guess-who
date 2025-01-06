@@ -82,26 +82,14 @@ nextGroupBtn.addEventListener("click", () => {
     nextGroupBtn.style.display = "none";
     hintBtn.style.display = "block";
     GuessBtn.style.display = "block";
-    startBonusQuizBtn.style.display = "block";
     stage = 2;
-});
-
-const startBonusQuizBtn = document.getElementById("startBonusQuiz");
-
-startBonusQuizBtn.addEventListener("click", () => {
-    chatArea.innerHTML = "";
-
-    // Construct the URL to redirect to the bonus quiz page with the game_id
-    const redirectUrl = `/game/${gameId}/bonus-quiz`;
-
-    // Redirect the user to the bonus quiz page
-    window.location.href = redirectUrl;
 });
 
 function handleStage2(input) {
     
     const botResponse = simulateBotResponse(input);
     appendMessage("ChatBot", BOT_IMG, "left", botResponse, true);
+    checkGameEnd(gameId);
 }
 
 function simulateBotResponse(question) {
@@ -161,4 +149,50 @@ function displayTextWithTypingEffect(element, text) {
     i++;
     if (i >= text.length) clearInterval(interval);
     }, typingSpeed);
+}
+
+async function checkGameEnd() {
+    try {
+        const response = await fetch(`/game/${gameId}/status`);
+        if (response.ok) {
+            const gameStatus = await response.json();
+            //TODO: check whether this works in the context of the game
+            const isGameFinished = gameStatus.game_status === "finished";
+            // const isGameFinished = true;
+
+            if (isGameFinished) {
+                showGameOverPopup();
+            }
+        } else {
+            console.error("Failed to fetch game status.");
+        }
+    } catch (error) {
+        console.error("Error checking game status:", error);
+    }
+}
+
+function showGameOverPopup() {
+    const popup = document.createElement("div");
+    popup.id = "gameOverPopup";
+    popup.style.position = "fixed";
+    popup.style.top = "50%";
+    popup.style.left = "50%";
+    popup.style.transform = "translate(-50%, -50%)";
+    popup.style.backgroundColor = "#fff";
+    popup.style.padding = "20px";
+    popup.style.boxShadow = "0px 0px 10px rgba(0, 0, 0, 0.5)";
+    popup.style.zIndex = "1000";
+    popup.style.textAlign = "center";
+
+    const popupContent = `
+        <h2>Game Over!</h2>
+        <p>Now you can test your knowledge about LLMs and gain some bonus points. Let's proceed to the bonus quiz!</p>
+        <button id="proceedToQuizBtn" style="padding: 10px 20px; background: rgb(0, 196, 65); color: white; border: none; border-radius: 5px; cursor: pointer;">Proceed</button>
+    `;
+    popup.innerHTML = popupContent;
+    document.body.appendChild(popup);
+
+    document.getElementById("proceedToQuizBtn").addEventListener("click", () => {
+        window.location.href = `/game/${gameId}/bonus-quiz`;
+    });
 }
