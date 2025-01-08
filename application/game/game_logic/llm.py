@@ -21,5 +21,7 @@ class LLMInitializer:
             return OpenAI(model_name="gpt-4o-mini", openai_api_key=openai_api_key)
         elif llm_provider == "phi":
             return Ollama(model="phi3", request_timeout=60.0)
+        elif llm_provider == "llama3_remote":
+            return "llama3"
         else:
             raise ValueError(f"Unsupported LLM provider: {llm_provider}")
