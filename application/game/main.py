@@ -84,7 +84,8 @@ def play_game(current_game):
             if action == "1":
                 # Ask a question
                 question = input("Enter your question: ")
-                if current_round.ask_question(question):
+                result = current_round.ask_question(question)
+                if result["identity_revealed"]:
                     current_round.was_person_revealed = True
                 # print(f"Person responds: {response}")
 

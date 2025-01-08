@@ -24,6 +24,11 @@ def bonus_quiz(game_id):
     return render_template('bonus_quiz.html', game_id=game_id)
 
 
+@app.route('/carousel', methods=['GET'])
+def carousel():
+    return render_template('carousel.html')
+
+
 # Register the API Blueprints (ensure these are registered properly)
 app.register_blueprint(game_routes)
 

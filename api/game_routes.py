@@ -260,7 +260,7 @@ def get_game_status(game_id):
                     "name": game_round.person.name if game_round.person else "Not yet assigned",
                     "description": game_round.person.description if game_round.person else "Not yet assigned"
                 },
-                "round_status": 'finished' if game_round.is_round_finished() else 'in_progress',
+                "round_status": "finished" if game_round.finished else "in_progress",
                 "llm_team": {
                     "name": game_round.question_team.name
                 },
@@ -497,13 +497,15 @@ def ask_question(game_id):
         return jsonify({"error": "Question is required."}), 400
 
     # Ask the Person instance
-    response = current_round.ask_question(question)
+    result = current_round.ask_question(question)
+    was_identity_revealed = result["identity_revealed"]
+    response = result["response"]
     is_round_finished = current_round.is_round_finished()
 
     return jsonify({
         "question": question,
-        # "response": response.message.content,
-        "identity_revealed": response,
+        "response": response,
+        "identity_revealed": was_identity_revealed,
         "is_round_finished": is_round_finished
     })
 

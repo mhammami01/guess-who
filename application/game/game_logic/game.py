@@ -48,10 +48,27 @@ class Game:
         current_round.person = person
 
     def end_round(self):
-        round_summary = self.get_current_round().get_round_summary()
-        self.get_current_round().update_total_scores_and_reset_round()
+        current_round = self.get_current_round()
+
+        # Ensure the round meets the criteria to be finished
+        if not current_round.is_round_finished():
+            raise RuntimeError("Cannot end a round that is still running.")
+
+        # Mark the round as finished explicitly
+        current_round.mark_finished()
+
+        # Collect round summary and update scores
+        round_summary = current_round.get_round_summary()
+        current_round.update_total_scores_and_reset_round()
+
+        # Switch teams and increment the round index
         self.switch_teams()
         self.increment_round_index()
+
+        # Check if the game is over
+        if self.is_game_over():
+            self.is_running = False  # Mark the game as no longer running
+
         return round_summary
 
     def get_current_round(self):
@@ -110,9 +127,12 @@ class Game:
     def is_game_over(self) -> bool:
         """
         Check if the game is over.
+        The game ends if:
+        - The maximum number of rounds is reached, AND
+        - All rounds are marked as finished.
         :return: True if the game is over, otherwise False.
         """
-        return len(self.rounds) == self.max_rounds and self.get_current_round().is_round_finished()
+        return len(self.rounds) == self.max_rounds and all(round.finished for round in self.rounds)
 
     def declare_winner(self):
         """

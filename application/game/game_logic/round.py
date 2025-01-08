@@ -1,5 +1,5 @@
 import os
-from typing import Union
+from typing import Union, Tuple
 
 from dotenv import load_dotenv
 
@@ -29,12 +29,16 @@ class Round(Observable):
         self.hint_manager = hint_manager
         self.was_person_revealed = False
         self.exchange_history = Exchange()
+        self.finished = False
 
         # Add teams as observers
         self.add_observer(llm_team)
         self.add_observer(guess_team)
 
         load_dotenv()
+
+    def mark_finished(self):
+        self.finished = True
 
     def update(self, event, **kwargs):
         """
@@ -59,7 +63,7 @@ class Round(Observable):
             "hints_used": self.hints_used,
             "was_person_revealed": self.was_person_revealed,
             "exchange_history": self.exchange_history.to_dict(),
-            "is_finished": self.is_round_finished()
+            "is_finished": self.finished
         }
 
     def use_hint(self):
@@ -97,7 +101,7 @@ class Round(Observable):
             self.exchange_history.add_exchange(guess, f"Wrong guess.")
             return False
 
-    def ask_question(self, question: str) -> bool:
+    def ask_question(self, question: str) -> dict:
         """
         Handle asking a question, deducting a point from the question team, and getting the response.
         """
@@ -113,11 +117,14 @@ class Round(Observable):
         # Save the interaction in exchange history
         self.exchange_history.add_exchange(question, response_content)
 
-        if self.was_identity_revealed(response.message.content):
+        was_identity_revealed = self.was_identity_revealed(response.message.content)
+        if was_identity_revealed:
             self.was_person_revealed = True
-            return True
 
-        return False
+        return {
+            "identity_revealed": was_identity_revealed,
+            "response": response_content
+        }
 
     def was_identity_revealed(self, message: str) -> bool:
         if self.person.name.lower() in message.lower().strip():
@@ -145,26 +152,32 @@ class Round(Observable):
 
     def is_round_finished(self) -> bool:
         """
-        Check if the round is finished or not.
+        Check if the round is finished.
         A round ends if:
         - The person is guessed correctly by the guessing team, OR
         - The person reveals their identity, OR
-        - The maximum number of questions has been reached.
-        :return: boolean indicating if the round is finished or not.
+        - The maximum number of questions has been reached, OR
+        - The round is explicitly marked as finished.
+        :return: Boolean indicating if the round is finished or not.
         """
+        # Explicitly marked as finished
+        if self.finished:
+            return True
 
-        # check if person has revealed themselves or was guessed correctly
+        # The person was revealed or guessed correctly
         if self.was_person_revealed:
             return True
 
-        # Check if the current question team's round score is 0
-        if self.question_team.get_round_score() == 0:
+        # The question team's round score is depleted
+        if self.question_team.get_round_score() <= 0:
             return True
 
-        # Check if the maximum number of questions has been reached
-        if self.exchange_history:
-            return len(self.exchange_history.get_exchange_history()) == float(os.getenv("MAX_EXCHANGE_LENGTH"))
-        # TODO: check more or other things???
+        # Maximum number of exchanges reached
+        max_exchanges = float(os.getenv("MAX_EXCHANGE_LENGTH"))
+        if self.exchange_history and len(self.exchange_history.get_exchange_history()) >= max_exchanges:
+            return True
+
+        return False
 
     def update_total_scores_and_reset_round(self) -> None:
         self.question_team.score.update_total_score()
