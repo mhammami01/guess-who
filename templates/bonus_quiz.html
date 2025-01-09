@@ -20,20 +20,9 @@
 
         <main class="msger-chat" style="background-image: url('{{ url_for('static', filename='images/background.jpg') }}');" id="quizArea">
         </main>
-
-        <form class="msger-inputarea" id="quizForm" style="display: none;">
-            <div class="input-container">
-                <textarea class="msger-input" id="quizAnswer" placeholder="Enter your answer here..."></textarea>
-                <button type="submit" class="msger-send-btn">Submit</button>
+            <div class="input-container" id="answerButtonsContainer">
+                <!-- Answer buttons will be dynamically injected here -->
             </div>
-        </form>
-
-        <div class="startbutton" id="startQuizButton">
-            <button class="msger-send-btn" onclick="startQuiz()">Start Quiz</button>
-        </div>
-
-        <button id="nextGroupBtn" style="display: none; margin: 10px auto; padding: 10px 20px; font-size: 16px; cursor: pointer; background: rgb(0, 196, 65);">Give the Computer to Group 2</button>
-        <button id="startBonusQuiz" style="display: none; margin: 10px auto; padding: 10px 20px; font-size: 16px; cursor: pointer; background: rgb(0, 196, 65);">Start Bonus Quiz</button>
     </section>
 
     <script>

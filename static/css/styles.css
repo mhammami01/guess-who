@@ -190,4 +190,23 @@
     background-repeat: no-repeat;
     background-position: center;
   }
+
+.answer-button {
+    background-color: #4CAF50; /* Green */
+    color: white;
+    padding: 10px 10px;
+    border: none;
+    margin: 10px auto; /* Center the button horizontally */
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+    width: 90%; /* Width is 90% of its container */
+    transition: background-color 0.3s;
+    display: block; /* Ensure the button is treated as a block-level element */
+}
+
+.answer-button:hover {
+    background-color: #45a049; /* Darker green */
+}
+
   

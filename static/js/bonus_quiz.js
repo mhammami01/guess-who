@@ -1,10 +1,8 @@
 const chatArea = document.getElementById("quizArea");
 let currentTeamIndex = 0; // Keep track of which team is currently active
 let teams = [];
+let isQuizOver = false;
 
-// Event listeners
-document.getElementById("quizForm").addEventListener("submit", handleSubmitAnswer);
-document.getElementById("quizAnswer").addEventListener("keydown", handleAnswerKeydown);
 
 // Initialization
 window.onload = function () {
@@ -13,47 +11,108 @@ window.onload = function () {
 };
 
 // Core Quiz Functions
-async function startQuiz() {
-    toggleElement("startQuizButton", false);
+function startQuiz() {
     appendMessage("QuizBot", chatBotImg, "left", "Let's begin the quiz! Your first question is coming up.");
 
-    try {
-        const response = await fetch(`${quizApiUrl}/start`, { method: 'POST' });
-        response.ok ? fetchNextQuestion() : handleErrorResponse(response, "Error starting quiz");
-    } catch (error) {
-        handleError("An error occurred while starting the quiz.", error);
-    }
+    fetch(`${quizApiUrl}/start`, { method: 'POST' })
+        .then(response => {
+            if (response.ok) {
+                return fetchNextQuestion();
+            } else {
+                return handleErrorResponse(response, "Error starting quiz");
+            }
+        })
+        .catch(error => {
+            handleError("An error occurred while starting the quiz.", error);
+        });
 }
 
-async function fetchNextQuestion() {
-    try {
-        const response = await fetch(`${quizApiUrl}/next`);
-        if (response.ok) {
-            const data = await response.json();
-            appendMessage("QuizBot", chatBotImg, "left", `${data.team}'s turn: ${data.question}`);
-            toggleElement("quizForm", true);
-            updateTeamStatus();
-        } else {
-            declareWinner();
-        }
-    } catch (error) {
-        handleError("An error occurred while fetching the question.", error);
+function fetchNextQuestion() {
+    if (isQuizOver) {
+        console.log("Quiz is over. No more questions will be fetched.");
+        return; // Exit early if the quiz is over
     }
+
+    console.log("Starting fetchNextQuestion...");
+
+    updateTeamStatus()
+        .then(() => {
+            console.log("Team status updated before fetching question");
+
+            return fetch(`${quizApiUrl}/next`);
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json(); // Return the JSON data if the response is okay
+            } else if (response.status === 400) {
+                console.error("400 BAD REQUEST: No more questions available or quiz is over.");
+                isQuizOver = true; // Mark quiz as over
+                disableControls(); // Disable buttons immediately
+                declareWinner(); // Call declareWinner to handle winner announcement
+                return null; // Return `null` to signal no further processing
+            } else {
+                throw new Error("Error fetching question");
+            }
+        })
+        .then(data => {
+            if (data) { // Ensure `data` is not null or undefined
+                console.log("Fetched question data:", data);
+                appendMessage("QuizBot", chatBotImg, "left", `${data.team}'s turn: ${data.question}`);
+                displayAnswerButtons(data.choices);
+            }
+        })
+        .catch(error => {
+            handleError("An error occurred while fetching the question.", error);
+        });
+
+    console.log("Completed fetchNextQuestion.");
 }
 
-async function updateTeamStatus() {
-    try {
-        const response = await fetch(`/game/${gameId}/status`);
-        if (response.ok) {
-            const data = await response.json();
+
+
+// Event Handler for when a button is clicked
+async function handleAnswerButtonClick(answer) {
+    appendMessage("You", studentImg, "right", answer);
+    console.log("This is the answer that will be submitted", answer)
+    await submitAnswer(answer); // Submit the answer once the button is clicked
+}
+
+// Display the answer buttons dynamically
+function displayAnswerButtons(choices) {
+    const answerButtonsContainer = document.getElementById("answerButtonsContainer");
+    // Clear any existing buttons
+    answerButtonsContainer.innerHTML = '';
+
+    choices.forEach(choice => {
+        const button = document.createElement("button");
+        button.classList.add("answer-button");
+        button.textContent = choice;
+        // Ensure only the selected choice is passed when the button is clicked
+        button.onclick = () => {
+            console.log("Selected choice:", choice);  // Log the choice that was clicked
+            handleAnswerButtonClick(choice); // Pass only the selected choice
+        };
+        answerButtonsContainer.appendChild(button);
+    });
+}
+
+
+function updateTeamStatus() {
+    return fetch(`/game/${gameId}/status`)
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error("Failed to fetch game status");
+            }
+        })
+        .then(data => {
             teams = data.teams;
             displayCurrentTeam();
-        } else {
-            console.error("Failed to fetch game status");
-        }
-    } catch (error) {
-        console.error("Error updating team status:", error);
-    }
+        })
+        .catch(error => {
+            console.error("Error updating team status:", error);
+        });
 }
 
 async function declareWinner() {
@@ -62,7 +121,8 @@ async function declareWinner() {
         if (response.ok) {
             const data = await response.json();
             appendMessage("QuizBot", chatBotImg, "left", `Quiz is over! The winner is: ${data.winner}`);
-            disableControls();
+            // isQuizOver = true;
+            // disableControls();
         } else {
             handleErrorResponse(response, "Error declaring winner");
         }
@@ -71,52 +131,38 @@ async function declareWinner() {
     }
 }
 
-// Event Handlers
-function handleSubmitAnswer(event) {
-    event.preventDefault();
-    const answer = document.getElementById("quizAnswer").value.trim();
-    if (!answer) {
-        alert("Please provide an answer.");
-        return;
-    }
-
-    appendMessage("You", studentImg, "right", answer);
-    submitAnswer(answer);
-}
-
-function handleAnswerKeydown(event) {
-    if (event.key === "Enter") {
-        event.preventDefault();
-        document.getElementById("quizForm").dispatchEvent(new Event("submit"));
-    }
-}
-
 // Utility Functions
 async function submitAnswer(answer) {
-    try {
-        const response = await fetch(`${quizApiUrl}/answer`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ answer })
-        });
+    console.log("submitting answer ...");
 
+    fetch(`${quizApiUrl}/answer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answer })
+    })
+    .then(response => {
         if (response.ok) {
-            const data = await response.json();
-            appendMessage("QuizBot", chatBotImg, "left", `Result: ${data.result}`);
-            resetAnswerField();
-            fetchNextQuestion();
-            updateTeamStatus();
-            currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+            return response.json();
         } else {
-            handleErrorResponse(response, "Error submitting answer");
+            return handleErrorResponse(response, "Error submitting answer");
         }
-    } catch (error) {
+    })
+    .then(data => {
+        appendMessage("QuizBot", chatBotImg, "left", `Result: ${data.result}`);
+        currentTeamIndex = (currentTeamIndex + 1) % teams.length;
+        console.log("This happens when I switch the team index", currentTeamIndex);
+        // Fetch the next question after updating the team index
+        fetchNextQuestion();
+    })
+    .catch(error => {
         handleError("An error occurred while submitting the answer.", error);
-    }
+    });
 }
+
 
 function displayCurrentTeam() {
     const currentTeam = teams[currentTeamIndex];
+    console.log("This is the current team", currentTeam);
     if (currentTeam) {
         document.getElementById("teamName").textContent = `Team: ${currentTeam.name}`;
         document.getElementById("teamScore").textContent = `Score: ${currentTeam.total_score}`;
@@ -124,19 +170,23 @@ function displayCurrentTeam() {
 }
 
 function disableControls() {
-    ["quizForm", "startQuizButton", "nextGroupBtn", "startBonusQuiz"].forEach(id =>
-        toggleElement(id, false)
-    );
-    document.getElementById("quizAnswer").disabled = true;
+    const answerButtonsContainer = document.getElementById("answerButtonsContainer");
+    if (answerButtonsContainer) {
+        const buttons = answerButtonsContainer.querySelectorAll("button");
+        buttons.forEach(button => {
+            button.disabled = true;
+        });
+    }
+    console.log("Answer buttons disabled.");
 }
 
 function toggleElement(id, isVisible) {
     document.getElementById(id).style.display = isVisible ? "block" : "none";
 }
 
-function resetAnswerField() {
-    document.getElementById("quizAnswer").value = '';
-}
+// function resetAnswerField() {
+//     document.getElementById("quizAnswer").value = '';
+// }
 
 function appendMessage(name, img, side, text) {
     const msgContainer = document.createElement("div");
