@@ -120,9 +120,8 @@ async function declareWinner() {
         const response = await fetch(`/game/${gameId}/winner`, { method: 'POST' });
         if (response.ok) {
             const data = await response.json();
-            appendMessage("QuizBot", chatBotImg, "left", `Quiz is over! The winner is: ${data.winner}`);
-            // isQuizOver = true;
-            // disableControls();
+            // Call the popup function and pass the winner's name
+            showWinnerPopup(data.winner);
         } else {
             handleErrorResponse(response, "Error declaring winner");
         }
@@ -234,4 +233,42 @@ function handleError(message, error) {
 async function handleErrorResponse(response, message) {
     const error = await response.json();
     alert(`${message}: ${error.error}`);
+}
+
+function showWinnerPopup(winnerName) {
+    const popup = document.createElement("div");
+    popup.id = "winnerPopup";
+    popup.style.position = "fixed";
+    popup.style.top = "50%";
+    popup.style.left = "50%";
+    popup.style.transform = "translate(-50%, -50%)";
+    popup.style.backgroundColor = "#fff";
+    popup.style.padding = "30px";  // Reduced padding for a less wide layout
+    popup.style.boxShadow = "0px 15px 25px rgba(0, 0, 0, 0.4)";
+    popup.style.zIndex = "1000";
+    popup.style.textAlign = "center";
+    popup.style.borderRadius = "15px";
+    popup.style.maxWidth = "400px";  // Reduced max width for a narrower popup
+    popup.style.width = "80%";  // Slightly reduced width for a more compact look
+
+    // Add a header with larger font size and more spacing
+    const header = document.createElement("h2");
+    header.textContent = "Bonus Quiz Over!";
+    header.style.fontSize = "28px";
+    header.style.fontWeight = "bold";
+    header.style.color = "#4CAF50";
+    header.style.marginBottom = "20px";
+
+    const winnerText = document.createElement("p");
+    winnerText.innerHTML = `The game winner is: <strong style="color: #8b4513;">${winnerName}</strong>`;
+    winnerText.style.fontSize = "20px";
+    winnerText.style.color = "#333";
+    winnerText.style.marginBottom = "30px";
+
+    // Adding some text padding and margin for better readability
+    popup.appendChild(header);
+    popup.appendChild(winnerText);
+
+    // Append the popup to the body
+    document.body.appendChild(popup);
 }
