@@ -708,11 +708,17 @@ def declare_winner(game_id):
     current_scores = game.get_game_score()
     winner = game.declare_winner()
 
+    # If there's a tie, set winner to a message indicating a tie
+    if winner is None:
+        winner_message = "It's a tie!"
+    else:
+        winner_message = winner
+
     # Return the winner
     return jsonify({
         "game_id": game_id,
         "current_scores": current_scores,
-        "winner": winner,
+        "winner": winner_message,
         "message": "Winner declared successfully."
     }), 200
 

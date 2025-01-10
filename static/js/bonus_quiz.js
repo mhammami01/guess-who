@@ -292,7 +292,12 @@ function showWinnerPopup(winnerName) {
     header.style.marginBottom = "20px";
 
     const winnerText = document.createElement("p");
-    winnerText.innerHTML = `The game winner is: <strong style="color: #8b4513;">${winnerName}</strong>`;
+    // Check if it's a tie or a winner
+    if (winnerName === "It's a tie!") {
+        winnerText.innerHTML = `<strong style="color: #8b4513;">${winnerName}</strong>`;
+    } else {
+        winnerText.innerHTML = `The game winner is: <strong style="color: #8b4513;">${winnerName}</strong>`;
+    }
     winnerText.style.fontSize = "20px";
     winnerText.style.color = "#333";
     winnerText.style.marginBottom = "30px";
