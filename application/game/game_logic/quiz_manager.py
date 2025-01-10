@@ -191,12 +191,11 @@ class QuizManager(Observable):
         self.current_team_index = (self.current_team_index + 1) % len(self.teams)
         return result
 
-    # def calculate_similarity(self, student_answer, correct_answer):
-    #     # Generate embeddings
-    #     embeddings = self.model.encode([student_answer, correct_answer])
-    #     # Compute cosine similarity
-    #     return cosine_similarity([embeddings[0]], [embeddings[1]])[0][0]
-    #
-    # def is_answer_correct(self, student_answer, correct_answer, threshold=0.8):
-    #     similarity = self.calculate_similarity(student_answer, correct_answer)
-    #     return similarity >= threshold, similarity
+    def get_quiz_status(self):
+        """
+        Returns the current status of the quiz.
+        """
+        if not self.is_running:
+            return {"quiz_status": "finished"}
+
+        return {"quiz_status": "in_progress"}

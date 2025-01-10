@@ -862,3 +862,45 @@ def submit_answer(game_id):
 
     result = quiz_manager.submit_answer(answer)
     return jsonify({"result": result}), 200
+
+
+@game_routes.route('/game/<string:game_id>/quiz/status', methods=['GET'])
+@swag_from({
+    'summary': 'Get Quiz Status',
+    'description': 'Retrieves the current status of the quiz for a given game.',
+    'parameters': [
+        {
+            'name': 'game_id',
+            'in': 'path',
+            'required': True,
+            'type': 'string',
+            'description': 'Unique identifier for the game.',
+            'example': 'game_1'
+        }
+    ],
+    'responses': {
+        200: {
+            'description': 'Quiz status retrieved successfully.',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'quiz_status': {'type': 'string', 'enum': ['in_progress', 'finished']}
+                }
+            }
+        },
+        404: {
+            'description': 'Quiz not found.'
+        }
+    }
+})
+def get_quiz_status(game_id):
+    # Retrieve the quiz manager for the given game_id
+    quiz_manager = quizzes.get(game_id)
+    if not quiz_manager:
+        return jsonify({"error": f"Quiz for game ID '{game_id}' not found."}), 404
+
+    # Get the status of the quiz
+    status = quiz_manager.get_quiz_status()
+
+    # Return the quiz status in the response
+    return jsonify(status), 200

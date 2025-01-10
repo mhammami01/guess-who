@@ -14,59 +14,91 @@ window.onload = function () {
 function startQuiz() {
     appendMessage("QuizBot", chatBotImg, "left", "Let's begin the quiz! Your first question is coming up.");
 
+    // Start the quiz
     fetch(`${quizApiUrl}/start`, { method: 'POST' })
         .then(response => {
             if (response.ok) {
-                return fetchNextQuestion();
+                // Once the quiz is started, get the game_id and fetch the quiz status
+                return response.json(); // Assuming the response contains the game_id
             } else {
                 return handleErrorResponse(response, "Error starting quiz");
             }
         })
+        .then(data => {
+            return fetch(`${quizApiUrl}/status`);
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json(); // Get the quiz status
+            } else {
+                return handleErrorResponse(response, "Error fetching quiz status");
+            }
+        })
+        .then(statusData => {
+            const quizStatus = statusData.quiz_status;
+            console.log("Quiz Status:", quizStatus);
+
+            if (quizStatus === "in_progress") {
+                return fetchNextQuestion();
+            } else {
+                appendMessage("QuizBot", chatBotImg, "left", "The quiz has already ended.");
+            }
+        })
         .catch(error => {
-            handleError("An error occurred while starting the quiz.", error);
+            handleError("An error occurred while starting the quiz or fetching its status.", error);
         });
 }
 
 function fetchNextQuestion() {
-    if (isQuizOver) {
-        console.log("Quiz is over. No more questions will be fetched.");
-        return; // Exit early if the quiz is over
-    }
-
     console.log("Starting fetchNextQuestion...");
 
-    updateTeamStatus()
-        .then(() => {
-            console.log("Team status updated before fetching question");
+    // Check quiz status first
+    fetch(`${quizApiUrl}/status`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Failed to fetch quiz status.");
+            }
+            return response.json();
+        })
+        .then(statusData => {
+            const quizStatus = statusData.quiz_status;
+            console.log("Quiz Status:", quizStatus);
 
-            return fetch(`${quizApiUrl}/next`);
+            if (quizStatus !== "in_progress") {
+                console.log("Quiz is not in progress. Ending quiz.");
+                disableControls(); // Disable the controls
+                declareWinner(); // Announce the winner
+                return Promise.reject('Quiz has ended'); // This will skip the remaining promise chain
+            }
+
+            // Proceed to update team status and fetch the next question
+            return updateTeamStatus(); // This will return a promise
+        })
+        .then(() => {
+            console.log("Team status updated. Fetching next question...");
+            return fetch(`${quizApiUrl}/next`); // Fetch the next question
         })
         .then(response => {
-            if (response.ok) {
-                return response.json(); // Return the JSON data if the response is okay
-            } else if (response.status === 400) {
-                console.error("400 BAD REQUEST: No more questions available or quiz is over.");
-                isQuizOver = true; // Mark quiz as over
-                disableControls(); // Disable buttons immediately
-                declareWinner(); // Call declareWinner to handle winner announcement
-                return null; // Return `null` to signal no further processing
-            } else {
-                throw new Error("Error fetching question");
+            if (!response.ok) {
+                throw new Error("Error fetching the next question.");
             }
+            return response.json();  // Parse the JSON response
         })
         .then(data => {
-            if (data) { // Ensure `data` is not null or undefined
-                console.log("Fetched question data:", data);
-                appendMessage("QuizBot", chatBotImg, "left", `${data.team}'s turn: ${data.question}`);
-                displayAnswerButtons(data.choices);
-            }
+            console.log("Fetched question data:", data);
+            appendMessage("QuizBot", chatBotImg, "left", `${data.team}'s turn: ${data.question}`);
+            displayAnswerButtons(data.choices);
         })
         .catch(error => {
-            handleError("An error occurred while fetching the question.", error);
+            // If we hit the 'Quiz has ended' rejection, we don't need to display it as an error
+            if (error !== 'Quiz has ended') {
+                handleError("An error occurred during fetchNextQuestion.", error);
+            }
         });
 
     console.log("Completed fetchNextQuestion.");
 }
+
 
 
 
