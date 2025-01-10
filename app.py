@@ -10,7 +10,12 @@ swagger = Swagger(app)
 
 
 @app.route('/')
-def home():
+def introduction_page():
+    return render_template('carousel.html')
+
+
+@app.route('/game_setup')
+def game_setup():
     return render_template('index.html')
 
 
