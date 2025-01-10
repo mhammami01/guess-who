@@ -33,21 +33,21 @@ class QuizManager(Observable):
                 "question": "Which of these is an example of an LLM?",
                 "choices": [
                     "ChatGPT",
-                    "A microwave oven",
-                    "A calculator",
+                    "Windows",
+                    "Tiktok",
                     "A fitness tracker"
                 ],
                 "correct_answer": "ChatGPT"
             },
             {
-                "question": "How do LLMs help people in everyday life?",
+                "question": "How can someone try to trick an LLM into giving a wrong answer?",
                 "choices": [
-                    "By playing music",
-                    "By helping people with language-related tasks like translation or writing",
-                    "By making phone calls",
-                    "By making food"
+                    "By asking the LLM only easy questions",
+                    "By hiding misleading instructions in the question",
+                    "By asking the same question multiple times",
+                    "By waiting for the LLM to finish processing"
                 ],
-                "correct_answer": "By helping people with language-related tasks like translation or writing"
+                "correct_answer": "By hiding misleading instructions in the question"
             },
             {
                 "question": "What is an example of a task an LLM can do?",
@@ -70,14 +70,14 @@ class QuizManager(Observable):
                 "correct_answer": "By reading lots of text and examples"
             },
             {
-                "question": "What is the most important thing an LLM can do?",
+                "question": "What is prompt injection?",
                 "choices": [
-                    "Understand text and generate meaningful responses",
-                    "Make phone calls",
-                    "Build websites",
-                    "Design video games"
+                    "A way to teach an LLM to do math",
+                    "A way to trick the system by giving it special instructions hidden in normal input",
+                    "A type of software that helps LLMs work faster",
+                    "A method to improve the speed of your internet connection"
                 ],
-                "correct_answer": "Understand text and generate meaningful responses"
+                "correct_answer": "A way to trick the system by giving it special instructions hidden in normal input"
             },
             {
                 "question": "Which of the following is an example of using an LLM?",
@@ -100,14 +100,35 @@ class QuizManager(Observable):
                 "correct_answer": "No, it only generates responses based on patterns it has learned"
             },
             {
-                "question": "How do people interact with LLMs?",
+                "question": "What is prompting?",
                 "choices": [
-                    "By giving them commands or asking questions",
-                    "By touching them on a screen",
-                    "By watching them work in the background",
-                    "By controlling them with a remote"
+                    "The act of asking an LLM a question or giving it instructions",
+                    "The process of training an LLM to learn new skills",
+                    "The way you teach an LLM to recognize your voice",
+                    "A tool that helps improve internet security"
                 ],
-                "correct_answer": "By giving them commands or asking questions"
+                "correct_answer": "The act of asking an LLM a question or giving it instructions"
+            },
+            {
+                "question": "How does an LLM normally work when given a question?",
+                "choices": [
+                    "It guesses the answer randomly",
+                    "It looks at the question and tries to find the best answer based on patterns in its data",
+                    "It asks a person for help",
+                    "It immediately stops working to think about the answer"
+                ],
+                "correct_answer": "It looks at the question and tries to find the best answer based on patterns in "
+                                  "its data"
+            },
+            {
+                "question": "How can someone try to trick an LLM into giving a wrong answer?",
+                "choices": [
+                    "By asking the LLM only easy questions",
+                    "By hiding misleading instructions in the question",
+                    "By asking the same question multiple times",
+                    "By waiting for the LLM to finish processing"
+                ],
+                "correct_answer": "By hiding misleading instructions in the question"
             }
         ]
         self.current_team_index = 0
