@@ -71,8 +71,8 @@ class Round(Observable):
             hint = self.hint_manager.generate_hint()
             self.hints_used += 1
             self.notify_observers("hint_used",
-                                  deduct_team=self.question_team,
-                                  add_team=self.answer_team,
+                                  deduct_team=self.answer_team,
+                                  add_team=self.question_team,
                                   points=float(os.getenv("POINTS_FOR_HINT")))
             # Save the interaction in exchange history
             self.exchange_history.add_exchange("hint generated:", hint)
@@ -94,8 +94,8 @@ class Round(Observable):
             return True
         else:
             self.notify_observers("guess_incorrect",
-                                  deduct_team=self.question_team,
-                                  add_team=self.answer_team,
+                                  deduct_team=self.answer_team,
+                                  add_team=self.question_team,
                                   points=float(os.getenv("POINTS_FOR_GUESS")),
                                   guess=guess)
             self.exchange_history.add_exchange(guess, f"Wrong guess.")
@@ -106,8 +106,8 @@ class Round(Observable):
         Handle asking a question, deducting a point from the question team, and getting the response.
         """
         self.notify_observers("question_asked",
-                              deduct_team=self.question_team,
-                              add_team=self.answer_team,
+                              deduct_team=self.answer_team,
+                              add_team=self.question_team,
                               points=float(os.getenv("POINTS_FOR_QUESTION")),
                               question=question)
 
