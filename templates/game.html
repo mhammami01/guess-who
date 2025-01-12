@@ -33,12 +33,11 @@
   </section>
   <button id="nextGroupBtn" style="display: none; margin: 10px auto; padding: 10px 20px; font-size: 16px; cursor: pointer; background: rgb(0, 196, 65);">Give the Computer to Group 2</button> 
   <button id="startBonusQuiz" style="display: none; margin: 10px auto; padding: 10px 20px; font-size: 16px; cursor: pointer; background: rgb(0, 196, 65);">Start Bonus Quiz</button>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
   <script src="{{ url_for('static', filename='js/game.js') }}"></script>
   <script>
     const BOT_IMG = "{{ url_for('static', filename='images/chatbot.svg') }}";
     const PERSON_IMG = "{{ url_for('static', filename='images/students.svg') }}";
   </script>
-  <!-- Link the external CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </body>
 </html>  

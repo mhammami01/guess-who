@@ -438,6 +438,7 @@ function setupGuessingButton() {
     // Create the content of the popup
     const popupContent = `
         <h2>Make a Guess</h2>
+        <br>
         <input type="text" id="guessInput" placeholder="Enter your guess" style="width: 80%; padding: 10px; margin-bottom: 10px;">
         <br>
         <button id="submitGuessBtn" style="padding: 10px 20px; background: rgb(0, 196, 65); color: white; border: none; border-radius: 5px; cursor: pointer;">Submit</button>

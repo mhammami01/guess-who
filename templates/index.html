@@ -14,43 +14,44 @@
         <main class="msger-chat" style="background-image: url('{{ url_for('static', filename='images/background.jpg') }}');" id="chatArea">
             <div class="msg left-msg">
                 <div class="msg-img" style="background-image: url('{{ url_for('static', filename='images/chatbot.svg') }}');"></div>
-                <div class="msg-bubble">
+                <div class="msg-bubble" style="font-size: 18px; max-width: 700px;">
                     <div class="msg-info">
-                        <div class="msg-info-name">ChatBot</div>
+                        <div class="msg-info-name"></div>
                         <div class="msg-info-time"></div>
                     </div>
                     <div class="msg-text">
-                        Welcome to the Guess Who Game! Please set up your game by entering the team names and selecting the number of rounds.
+                        Welcome to the Guess Who! Please set up your game by entering the team names and selecting the number of rounds.
+                        <br>
+                        <br>
+                        <!-- Game Setup Form -->
+                        <div class="game-setup">
+                            <form id="gameSetupForm">
+                                <div class="form-group">
+                                    <label for="team1Name">Team 1 Name:</label>
+                                    <input type="text" id="team1Name" name="team1Name" placeholder="Enter Team 1 Name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="team2Name">Team 2 Name:</label>
+                                    <input type="text" id="team2Name" name="team2Name" placeholder="Enter Team 2 Name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="rounds">Number of Rounds:</label>
+                                    <select id="rounds" name="rounds" required>
+                                        <option value="" disabled selected>Select Rounds</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="text-align: center;">
+                                    <button class="startbutton" type="submit">Start the Game</button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Game Setup Form -->
-            <div class="game-setup">
-                <form id="gameSetupForm">
-                    <div class="form-group">
-                        <label for="team1Name">Team 1 Name:</label>
-                        <input type="text" id="team1Name" name="team1Name" placeholder="Enter Team 1 Name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="team2Name">Team 2 Name:</label>
-                        <input type="text" id="team2Name" name="team2Name" placeholder="Enter Team 2 Name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="rounds">Number of Rounds:</label>
-                        <select id="rounds" name="rounds" required>
-                            <option value="" disabled selected>Select Rounds</option>
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                        </select>
-                    </div>
-                    <div class="startbutton">
-                        <button class="msger-send-btn" type="submit">Start the Game</button>
-                    </div>
-                </form>
             </div>
         </main>
     </section>
@@ -104,7 +105,8 @@
     </script>
     
 </body>
-<style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+<!--style>
     :root {
         --body-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         --msger-bg: #fff;
@@ -204,5 +206,5 @@
     .msger-send-btn:hover {
         background: rgb(0, 180, 50);
     }
-</style>
+</style-->
 </html>
