@@ -42,14 +42,19 @@ async function update_status() {
     try {
         const gameStatus = await getGameStatus(gameId);
         if (gameStatus) {
-            team1Name = gameStatus.teams[swap].name;
-            team2Name = gameStatus.teams[1 - swap].name;
-            team1Score = gameStatus.teams[swap].round_score;
-            team2Score = gameStatus.teams[1 - swap].round_score;
+            team1Name = gameStatus.teams[0].name;
+            team2Name = gameStatus.teams[1].name;
+            team1Score = gameStatus.teams[0].round_score;
+            team2Score = gameStatus.teams[1].round_score;
 
             // Update UI with team names and scores
-            document.getElementById("teamName").textContent = `Team: ${team1Name}`;
-            document.getElementById("teamScore").textContent = `Score: ${team1Score}`;
+            if (stage === 1) {
+                document.getElementById("teamName").textContent = `Team: ${team1Name}`;
+                document.getElementById("teamScore").textContent = `Score: ${team1Score}`;
+            } else {
+                document.getElementById("teamName").textContent = `Team: ${team2Name}`;
+                document.getElementById("teamScore").textContent = `Score: ${team2Score}`;
+            }
             document.getElementById("Round").textContent = `Current Round: ${current_round}/${rounds}`;
             if (init) {
                 appendMessage("ChatBot", BOT_IMG, "left", `Welcome ${team1Name}!, please choose a famous Character and add instructions in the next prompt to prevent easy guessing:<br><strong>Example Characters:</strong> Napoleon Bonaparte, Albert Einstein, Cleopatra, Leonardo da Vinci`, false);
@@ -284,8 +289,6 @@ async function addPersonToRound(gameId, personName, personDescription) {
             );
             stage = 2;
             update_status();
-            document.getElementById("teamName").textContent = `Team: ${team2Name}`;
-            document.getElementById("teamScore").textContent = `Score: ${team2Score}`;
             nextGroupBtn.style.display = "block";
             buttonsForm.style.display = "block";
         } else {
@@ -501,18 +504,15 @@ function showRoundOverPopup(team1_summary, team2_summary) {
 }
 
 function proceedToNextRound() {
-    // Swap team names and scores
-    swap = 1 - swap;
-    update_status();
-
     // Reset UI elements for the new round
     chatArea.innerHTML = "";
-    appendMessage("ChatBot", BOT_IMG, "left", `Welcome ${team1Name}! Please choose a famous character and provide instructions to prevent easy guessing.`, false);
+    appendMessage("ChatBot", BOT_IMG, "left", `Welcome ${team1Name}! Please choose a famous character and provide instructions to prevent easy guessing.`, false); 
 
     // Reset stage to 1 for character selection
     stage = 1;
     selectedCharacter = null;
     constraints = "";
+    update_status();
 
     // Hide buttons not needed for character selection
     nextGroupBtn.style.display = "none";
