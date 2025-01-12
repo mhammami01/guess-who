@@ -90,11 +90,7 @@
                 if (response.ok) {
                     const data = await response.json();
                     console.log("Game created:", data);
-    
-                    // Redirect to the main game page or update the interface dynamically
-                    alert(`Game started! Game ID: ${data.game_id}`);
-                    // Optionally redirect to a new page
-                    window.location.href = `/game?id=${data.game_id}&r=${rounds}&t1=${team1Name}&t2=${team2Name}`;
+                    window.location.href = `/game?id=${data.game_id}&r=${rounds}`;
                 } else {
                     const errorData = await response.json();
                     console.error("Error creating game:", errorData);

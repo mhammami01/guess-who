@@ -83,7 +83,25 @@
       font-weight: bold;
       white-space: nowrap;      /* Prevent text wrap */
   }
+  .inputarea-header {
+    font-size: medium;
+    justify-content: space-around; /* Distribute space evenly around the buttons */
+    display: flex;                /* Use flexbox layout */
+    padding: 10px;
+    text-align: center;
+    border-bottom: var(--border);
+}
 
+.option-bubble {
+    background-color: #e2a072;
+    color: white;             /* White text */
+    border-radius: 15px;
+    padding: 5px 10px;
+    font-size: 14px;
+    font-weight: bold;
+    white-space: nowrap;      /* Prevent text wrap */
+    margin: 0 10px;           /* Optional: Add margin for spacing between buttons */
+}
   
   .msger-chat {
     flex: 1;

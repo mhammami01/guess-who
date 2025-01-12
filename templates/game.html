@@ -11,33 +11,24 @@
         <div class="msger-header-left">
           <span id="teamName" class="team-bubble">Team: Unknown</span>
         </div>
-        <div class="msger-header-title">- Guess Who Game -</div>
+        <div class="msger-header-title">- Guess Who Game -
+          <span id="Round" class="rounds">Current Round: 0</span>
+        </div>
         <div class="msger-header-right">
           <span id="teamScore" class="score-bubble">Score: 0</span>
         </div>
     </header>
 
     <main class="msger-chat" style="background-image: url('{{ url_for('static', filename='images/background.jpg') }}');" id="chatArea">
-      <div class="msg left-msg">
-        <div class="msg-img" style="background-image: url('{{ url_for('static', filename='images/chatbot.svg') }}');"></div>
-        <div class="msg-bubble">
-          <div class="msg-info">
-            <div class="msg-info-name">ChatBot</div>
-            <div class="msg-info-time"></div>
-          </div>
-          <div class="msg-text">
-            Welcome! Team 1, please choose a character from the list below and in the next prompt add instructions to prevent easy guessing:
-            <br><strong>Characters:</strong> Donald Trump, Napoleon Bonaparte, Albert Einstein, Cleopatra, Leonardo da Vinci, Angela Merkel, Queen Elizabeth II, William Shakespeare.
-          </div>
-        </div>
-      </div>
     </main>
 
+    <form id="guessers-buttons" class="inputarea-header" style="display: none; background-image: url('{{ url_for('static', filename='images/background.jpg') }}');" >
+      <button id="guess" class="option-bubble">Guess</button>
+      <button id="hint" class="option-bubble">Hint</button>
+    </form> 
     <form class="msger-inputarea">
       <textarea class="msger-input" id="textInput" placeholder="Enter your response..."></textarea>
-      <button id= "guess" type="guess" class="msger-send-btn" hidden>Guess</button>
-      <button id="hint" type="hint" class="msger-send-btn"hidden >Hint</button>
-      <button itype="submit" class="msger-send-btn">Send</button>
+      <button id ="submit" type="submit" class="msger-send-btn">submit</button>
     </form>
   </section>
   <button id="nextGroupBtn" style="display: none; margin: 10px auto; padding: 10px 20px; font-size: 16px; cursor: pointer; background: rgb(0, 196, 65);">Give the Computer to Group 2</button> 
