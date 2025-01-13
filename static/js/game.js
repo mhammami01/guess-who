@@ -134,15 +134,9 @@ nextGroupBtn.addEventListener("click", () => {
 });
 
 function handleStage2(input) {
-    const botResponse = simulateBotResponse(input);
-    appendMessage("ChatBot", BOT_IMG, "left", botResponse, true);
-    //checkGameEnd(gameId);
+    askQuestion(gameId, input);
 }
 
-function simulateBotResponse(question) {
-    askQuestion(gameId, question);
-
-}
 
 function appendMessage(name, img, side, text, isBotMessage) {
     const msgContainer = document.createElement("div");
@@ -191,6 +185,50 @@ function appendMessage(name, img, side, text, isBotMessage) {
         }
     }
 }
+
+function appendloading(name, img, side, msgContainer) {
+    const msgImg = document.createElement("div");
+    msgImg.className = "msg-img";
+    msgImg.style.backgroundImage = `url(${img})`;
+
+    const msgBubble = document.createElement("div");
+    msgBubble.className = "msg-bubble";
+
+    const msgInfo = document.createElement("div");
+    msgInfo.className = "msg-info";
+
+    const msgInfoName = document.createElement("div");
+    msgInfoName.className = "msg-info-name";
+    msgInfoName.textContent = name;
+
+    const loaderContainer = document.createElement("div");
+    loaderContainer.className = "loader-container";
+    const loader = document.createElement("div");  
+    loader.className = "loader";
+    const loader1 = document.createElement("div");
+    const loader2 = document.createElement("div");
+    const loader3 = document.createElement("div");
+    loader.appendChild(loader1);
+    loader.appendChild(loader2);
+    loader.appendChild(loader3);
+    loaderContainer.appendChild(loader);
+    
+    const msgInfoTime = document.createElement("div");
+    msgInfoTime.className = "msg-info-time";
+    msgInfoTime.textContent = new Date().toLocaleTimeString();
+
+    msgInfo.appendChild(msgInfoName);
+    msgInfo.appendChild(msgInfoTime);
+
+
+    msgBubble.appendChild(msgInfo);
+    msgBubble.appendChild(loaderContainer);
+    msgContainer.appendChild(msgImg);
+    msgContainer.appendChild(msgBubble);
+
+    chatArea.appendChild(msgContainer);
+    chatArea.scrollTop += 500;
+    }
 
 function displayTextWithTypingEffect(element, text) {
     let i = 0;
@@ -303,6 +341,10 @@ async function addPersonToRound(gameId, personName, personDescription) {
 
 async function askQuestion(gameId, question) {
     try {
+        const msgContainer = document.createElement("div");
+        msgContainer.className = `msg left-msg`;
+        appendloading("ChatBot", BOT_IMG, "left", msgContainer);
+
         const response = await fetch(`/game/${gameId}/round/ask`, {
             method: 'POST',
             headers: {
@@ -315,6 +357,8 @@ async function askQuestion(gameId, question) {
             const data = await response.json();
             console.log("Question asked:", data);
             update_status();
+            chatArea.removeChild(msgContainer);
+            //appendMessageWithloading("ChatBot", BOT_IMG, "left", `${data.response}`, true, 1);
             appendMessage("ChatBot", BOT_IMG, "left", `${data.response}`, true);
             if (data.identity_revealed) {
                 appendMessage("ChatBot", BOT_IMG, "left", "Identity revealed!", true);
