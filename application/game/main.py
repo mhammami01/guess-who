@@ -72,11 +72,11 @@ def play_game(current_game):
         # Alternate between teams
         while not current_round.is_round_finished():
             print(f"\n--- Round {current_game.current_round_index + 1}")
-            print(f"\n{current_round.question_team.name}'s turn.")
-            print(f"Total Score {current_round.question_team.name} Team: {current_round.question_team.get_total_score()}")
-            print(f"Round Score {current_round.question_team.name} Team: {current_round.question_team.get_round_score()}")
-            print(f"Total Score {current_round.answer_team.name} Team: {current_round.answer_team.get_total_score()}")
-            print(f"Round Score {current_round.answer_team.name} Team: {current_round.answer_team.get_round_score()}")
+            print(f"\n{current_round.guess_team.name}'s turn.")
+            print(f"Total Score {current_round.llm_team.name} Team: {current_round.llm_team.get_total_score()}")
+            print(f"Round Score {current_round.llm_team.name} Team: {current_round.llm_team.get_round_score()}")
+            print(f"Total Score {current_round.guess_team.name} Team: {current_round.guess_team.get_total_score()}")
+            print(f"Round Score {current_round.guess_team.name} Team: {current_round.guess_team.get_round_score()}")
 
             # Get user action
             action = input("Choose an action: (1) Ask a question, (2) Use a hint, (3) Make a guess: ")

@@ -129,6 +129,7 @@ nextGroupBtn.addEventListener("click", () => {
     "Guessing group, it's your turn! Start asking questions to guess the character.",
     true
     );
+    update_status();
     nextGroupBtn.style.display = "none";
     buttonsForm.style.display = "block";
     stage = 2;
@@ -327,7 +328,7 @@ async function addPersonToRound(gameId, personName, personDescription) {
                 true
             );
             stage = 2;
-            update_status();
+            // update_status();
             nextGroupBtn.style.display = "block";
             buttonsForm.style.display = "block";
         } else {
@@ -416,6 +417,10 @@ async function useHint(gameId) {
             console.log("Hint used:", data);
             update_status();
             appendMessage("ChatBot", BOT_IMG, "left", `Hint: ${data.hint}`, true);
+            if (data.is_round_finished) {
+                //appendMessage("ChatBot", BOT_IMG, "left", "Correct identity guessed!", true);
+                endRound(gameId);
+            }
         } else {
             console.error("Failed to use hint:", await response.text());
         }
@@ -531,7 +536,7 @@ function showRoundOverPopup(team1_summary, team2_summary) {
 function proceedToNextRound() {
     // Reset UI elements for the new round
     chatArea.innerHTML = "";
-    appendMessage("ChatBot", BOT_IMG, "left", `Welcome ${team1Name}! Please choose a famous character and provide instructions to prevent easy guessing.`, false); 
+    appendMessage("ChatBot", BOT_IMG, "left", `Welcome ${team2Name}! Please choose a famous character and provide instructions to prevent easy guessing.`, false);
 
     // Reset stage to 1 for character selection
     stage = 1;
