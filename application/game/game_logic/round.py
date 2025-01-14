@@ -23,8 +23,8 @@ class Round(Observable):
         super().__init__()
         self.round_id = round_id
         self.person = person
-        self.question_team = llm_team
-        self.answer_team = guess_team
+        self.llm_team = llm_team
+        self.guess_team = guess_team
         self.hints_used = 0
         self.hint_manager = hint_manager
         self.was_person_revealed = False
@@ -55,10 +55,10 @@ class Round(Observable):
                 "description": self.person.description
             } if self.person else None,
             "llm_team": {
-                "name": self.question_team.get_name()
+                "name": self.llm_team.get_name()
             },
             "guess_team": {
-                "name": self.answer_team.get_name()
+                "name": self.guess_team.get_name()
             },
             "hints_used": self.hints_used,
             "was_person_revealed": self.was_person_revealed,
@@ -71,8 +71,8 @@ class Round(Observable):
             hint = self.hint_manager.generate_hint()
             self.hints_used += 1
             self.notify_observers("hint_used",
-                                  deduct_team=self.answer_team,
-                                  add_team=self.question_team,
+                                  deduct_team=self.guess_team,
+                                  add_team=self.llm_team,
                                   points=float(os.getenv("POINTS_FOR_HINT")))
             # Save the interaction in exchange history
             self.exchange_history.add_exchange("hint generated:", hint)
@@ -94,8 +94,8 @@ class Round(Observable):
             return True
         else:
             self.notify_observers("guess_incorrect",
-                                  deduct_team=self.answer_team,
-                                  add_team=self.question_team,
+                                  deduct_team=self.guess_team,
+                                  add_team=self.llm_team,
                                   points=float(os.getenv("POINTS_FOR_GUESS")),
                                   guess=guess)
             self.exchange_history.add_exchange(guess, f"Wrong guess.")
@@ -106,8 +106,8 @@ class Round(Observable):
         Handle asking a question, deducting a point from the question team, and getting the response.
         """
         self.notify_observers("question_asked",
-                              deduct_team=self.answer_team,
-                              add_team=self.question_team,
+                              deduct_team=self.guess_team,
+                              add_team=self.llm_team,
                               points=float(os.getenv("POINTS_FOR_QUESTION")),
                               question=question)
 
@@ -137,13 +137,13 @@ class Round(Observable):
         Get a summary of the round. calculate scores, and determine the outcome.
         :return: A dictionary with the results of the round.
         """
-        team1_score = self.question_team.get_round_score()
-        team2_score = self.answer_team.get_round_score()
+        team1_score = self.llm_team.get_round_score()
+        team2_score = self.guess_team.get_round_score()
 
         # Log round details
         round_summary = {
-            'team1': {'name': self.question_team.get_name(), 'round_score': team1_score},
-            'team2': {'name': self.answer_team.get_name(), 'round_score': team2_score},
+            'team1': {'name': self.llm_team.get_name(), 'round_score': team1_score},
+            'team2': {'name': self.guess_team.get_name(), 'round_score': team2_score},
             'hints_used': self.hints_used,
             'interaction_log': self.exchange_history.get_exchange_history()
         }
@@ -169,7 +169,7 @@ class Round(Observable):
             return True
 
         # The question team's round score is depleted
-        if self.question_team.get_round_score() <= 0:
+        if self.guess_team.get_round_score() <= 0:
             return True
 
         # Maximum number of exchanges reached
@@ -180,12 +180,13 @@ class Round(Observable):
         return False
 
     def update_total_scores_and_reset_round(self) -> None:
-        self.question_team.score.update_total_score()
-        self.answer_team.score.update_total_score()
-        self.question_team.score.reset_round_score()
-        self.answer_team.score.reset_round_score()
+        self.llm_team.score.update_total_score()
+        self.guess_team.score.update_total_score()
+        # TODO: switch teams
+        self.llm_team.score.reset_round_score()
+        self.guess_team.score.reset_round_score()
         # Assign 10 points to the new guessing team (current answer team)
-        self.answer_team.score.reset(new_points=float(os.getenv("ROUND_POINTS")))
+        self.llm_team.score.reset(new_points=float(os.getenv("ROUND_POINTS")))
         self.person.reset_interaction_log()
         self.exchange_history.clear_exchange_history()
         self.hints_used = 0

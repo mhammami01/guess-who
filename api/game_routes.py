@@ -262,10 +262,10 @@ def get_game_status(game_id):
                 },
                 "round_status": "finished" if game_round.finished else "in_progress",
                 "llm_team": {
-                    "name": game_round.question_team.name
+                    "name": game_round.llm_team.name
                 },
                 "guess_team": {
-                    "name": game_round.answer_team.name
+                    "name": game_round.guess_team.name
                 }
             }
             for game_round in game.rounds

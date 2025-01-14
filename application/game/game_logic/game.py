@@ -30,8 +30,8 @@ class Game:
         game_round = Round(
             round_id=round_id,
             person=None,
-            llm_team=self.teams[0],
-            guess_team=self.teams[1],
+            llm_team=self.teams[1],
+            guess_team=self.teams[0],
             hint_manager=self.hint_manager
         )
         self.rounds.append(game_round)
