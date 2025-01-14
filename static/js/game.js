@@ -4,7 +4,10 @@ const msgerForm = document.querySelector(".msger-inputarea");
 const nextGroupBtn = document.getElementById("nextGroupBtn");
 const buttonsForm = document.getElementById("guessers-buttons");
 const hintBtn = document.getElementById("hint");
-const guessBtn = document.getElementById("guess");	
+const guessBtn = document.getElementById("guess");
+
+const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay))
+
 
 
 let stage = 1; // Game stage (1 = character selection, 2 = guessing phase)
@@ -19,11 +22,9 @@ const urlParams = new URLSearchParams(window.location.search);
 // Extract the game_id
 let  gameId = urlParams.get('id');
 let rounds = urlParams.get('r');
-//const team1Name = urlParams.get('t1');
-//const team2Name = urlParams.get('t2');
+
 
 // Game State Variables (to be populated after fetching game status)
-//let rounds = 0;
 let team1Name = '';
 let team2Name = '';
 let team1Score = 0;
@@ -345,7 +346,9 @@ async function addPersonToRound(gameId, personName, personDescription) {
             hintBtn.setAttribute('disabled', true);
             guessBtn.setAttribute('disabled', true);
             // update_status();
+            await sleep(2000);
             nextGroupBtn.style.display = "block";
+            
         } else {
             appendMessage("ChatBot", BOT_IMG, "left", "Failed to add person. Please try again. choose a new person", true);
             selectedCharacter = null;
@@ -380,6 +383,7 @@ async function askQuestion(gameId, question) {
             if (data.is_round_finished) {
                 if (data.identity_revealed)
                     await appendMessage("ChatBot", BOT_IMG, "left", "Identity revealed!", true);
+                await sleep(2000);
                 endRound(gameId);
                 //showRoundOverPopup();
                 //showGameOverPopup();
@@ -411,6 +415,7 @@ async function makeGuess(gameId, guess) {
             if (data.is_round_finished) {
                 if (data.identity_revealed)
                     await appendMessage("ChatBot", BOT_IMG, "left", "Identity revealed!", true);
+                await sleep(2000);
                 endRound(gameId);
             }
         } else {
@@ -436,6 +441,7 @@ async function useHint(gameId) {
             await appendMessage("ChatBot", BOT_IMG, "left", `Hint: ${data.hint}`, true);
             if (data.is_round_finished) {
                 //await appendMessage("ChatBot", BOT_IMG, "left", "Round is over!", true);
+                await sleep(2000);
                 endRound(gameId);
             }
         } else {
