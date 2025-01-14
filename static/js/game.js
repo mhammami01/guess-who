@@ -42,10 +42,10 @@ async function update_status() {
     try {
         const gameStatus = await getGameStatus(gameId);
         if (gameStatus) {
-            team1Name = gameStatus.teams[0].name;
-            team2Name = gameStatus.teams[1].name;
-            team1Score = gameStatus.teams[0].round_score;
-            team2Score = gameStatus.teams[1].round_score;
+            team1Name = gameStatus.teams[1].name;
+            team2Name = gameStatus.teams[0].name;
+            team1Score = gameStatus.teams[1].round_score;
+            team2Score = gameStatus.teams[0].round_score;
 
             // Update UI with team names and scores
             if (stage === 1) {
@@ -113,6 +113,7 @@ function handleStage1(input) {
         startRound(gameId);
         appendMessage("ChatBot", BOT_IMG, "left", `You selected "${selectedCharacter}". Now, provide instructions for the chatbot.`, true);
     } else {
+        console.log("This is the system message:", input)
         constraints = input;
         addPersonToRound(gameId, selectedCharacter, constraints);
     }
@@ -360,7 +361,7 @@ async function askQuestion(gameId, question) {
             chatArea.removeChild(msgContainer);
             //appendMessageWithloading("ChatBot", BOT_IMG, "left", `${data.response}`, true, 1);
             appendMessage("ChatBot", BOT_IMG, "left", `${data.response}`, true);
-            if (data.identity_revealed) {
+            if (data.is_round_finished) {
                 appendMessage("ChatBot", BOT_IMG, "left", "Identity revealed!", true);
                 endRound(gameId);
                 //showRoundOverPopup();
@@ -390,7 +391,7 @@ async function makeGuess(gameId, guess) {
             console.log("Guess result:", data);
             appendMessage("ChatBot", BOT_IMG, "left", data.message, true);
             update_status();
-            if (data.identity_revealed) {
+            if (data.is_round_finished) {
                 //appendMessage("ChatBot", BOT_IMG, "left", "Correct identity guessed!", true);
                 endRound(gameId);
             }
@@ -415,6 +416,10 @@ async function useHint(gameId) {
             console.log("Hint used:", data);
             update_status();
             appendMessage("ChatBot", BOT_IMG, "left", `Hint: ${data.hint}`, true);
+            if (data.is_round_finished) {
+                //appendMessage("ChatBot", BOT_IMG, "left", "Correct identity guessed!", true);
+                endRound(gameId);
+            }
         } else {
             console.error("Failed to use hint:", await response.text());
         }
