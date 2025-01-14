@@ -20,9 +20,11 @@
 
         <main class="msger-chat" style="background-image: url('{{ url_for('static', filename='images/background.jpg') }}');" id="quizArea">
         </main>
-            <div class="input-container" id="answerButtonsContainer">
+            <div class="container" style="background-image: url('{{ url_for('static', filename='images/background.jpg') }}');">
+            <div class="answer-buttons-grid" id="answerButtonsContainer" >
                 <!-- Answer buttons will be dynamically injected here -->
             </div>
+        </div>
     </section>
 
     <script>

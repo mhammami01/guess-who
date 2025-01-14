@@ -1,12 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Guess Who Game</title>
-  <!-- Bootstrap 5 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guess Who Game</title>
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
       :root {
         --body-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         --msger-bg: #fff;
@@ -22,7 +25,7 @@
         justify-content: center;
         align-items: center;
         margin: 0;
-     }
+      }
       .carousel-container {
         width: 100%;
         max-width: 900px; /* Increased the max-width of the carousel */
@@ -37,24 +40,69 @@
 
       .carousel-item {
         height: 600px; /* Increased height of carousel items */
-        background-color: var(--carousel-bg); /* Consistent light grey background */
+        background-color: var(
+          --carousel-bg
+        ); /* Consistent light grey background */
         border-radius: 0.75rem; /* Apply rounded corners to each item */
         overflow: hidden; /* Prevent content overflow during transition */
+        padding: 70px
+      }
+
+      .carousel-item h2{
+        font-size: 2.5rem
+      }
+
+      .carousel-item p{
+        font-size: 1.3rem
+      }
+      
+      .carousel-item ul{
+        font-size: 1.3rem
+      }
+
+      .padded-container ol {
+        list-style: none;
+        counter-reset: game-steps;
+        padding-left: 0;
+        margin: 0;
+        text-align: left;
+        max-width: 80%;
+        margin: 0 auto;
+      }
+
+      .padded-container ol li {
+        counter-increment: game-steps;
+        margin-bottom: 1rem;
+        position: relative;
+        padding-left: 2.5rem;
+        font-size: 1.3rem;
+      }
+
+      .padded-container ol li::before {
+        content: counter(game-steps) ".";
+        position: absolute;
+        left: 0;
+        font-weight: bold;
+        color: #333;
       }
 
       /* Make sure carousel controls are outside of the rounded corners */
-      .carousel-control-prev, .carousel-control-next {
+      .carousel-control-prev,
+      .carousel-control-next {
         z-index: 1;
         border-radius: 50%; /* Round the controls */
       }
 
-      .carousel-control-prev-icon, .carousel-control-next-icon {
-        filter: invert(1); /* Inverts the icon color for better contrast on dark background */
+      .carousel-control-prev-icon,
+      .carousel-control-next-icon {
+        filter: invert(
+          1
+        ); /* Inverts the icon color for better contrast on dark background */
       }
 
       /* Styling for the heading */
       .carousel-heading {
-        font-size: 2.5rem;
+        font-size: 3.5rem;
         font-weight: bold;
         color: #333;
         margin-bottom: 40px;
@@ -69,133 +117,219 @@
         overflow: auto; /* Enable scroll if the text overflows */
         margin: 0 auto;
       }
-    .padded-container {
-      padding: 40px; /* Increased padding around content */
-      margin: 0 auto; /* Centers content */
-      max-width: 80%; /* Limits the width of the content */
-      text-align: center; /* Centers text and images */
-    }
+      .padded-container {
+        padding: 40px; /* Increased padding around content */
+        margin: 0 auto; /* Centers content */
+        max-width: 80%; /* Limits the width of the content */
+        text-align: center; /* Centers text and images */
+      }
 
-    .padded-container img {
-      max-width: 100%; /* Ensures the image is responsive */
-      margin-bottom: 15px; /* Adds space below the image */
-      border: 2px solid #ddd; /* Optional: Border around the image */
-      border-radius: 0.75rem; /* Rounded corners for the image */
-    }
+      .padded-container img {
+        max-width: 100%; /* Ensures the image is responsive */
+        margin-bottom: 15px; /* Adds space below the image */
+        border: 2px solid #ddd; /* Optional: Border around the image */
+        border-radius: 0.75rem; /* Rounded corners for the image */
+      }
 
-    .padded-container h2 {
-      margin-top: 60px; /* Adds space above the heading */
-      margin-bottom: 20px; /* Adds space below the heading */
-      font-size: 1.8rem; /* Optional: Adjusts the font size for balance */
-    }
+      .padded-container h2 {
+        margin-top: 60px; /* Adds space above the heading */
+        margin-bottom: 20px; /* Adds space below the heading */
+        font-size: 1.8rem; /* Optional: Adjusts the font size for balance */
+      }
 
-    .padded-container p {
-      margin-bottom: 10px; /* Space below the paragraph */
-    }
-
-  </style>
-</head>
-<body>
-  <!-- Wrapper for heading and carousel -->
-  <div class="w-100 d-flex flex-column align-items-center">
-    <!-- Heading -->
-    <h1 class="carousel-heading">Welcome to Guess Who!</h1>
-    <!-- Carousel Container -->
-    <div class="carousel-container">
-      <div id="textCarousel" class="carousel slide rounded-lg shadow-lg carousel-dark" data-bs-ride="false"> <!-- Rounded and Shadow added -->
-        <div class="carousel-inner">
-          <!-- First Slide (Text) -->
-          <div class="carousel-item active rounded-lg">
-            <div class="d-flex justify-content-center align-items-center" style="height: 400px;">
-              <div class="carousel-text-container text-center">
-                <h2>Slide 1</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+      .padded-container p {
+        margin-bottom: 10px; /* Space below the paragraph */
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Wrapper for heading and carousel -->
+    <div class="w-100 d-flex flex-column align-items-center">
+      <!-- Heading -->
+      <h1 class="carousel-heading">Welcome to Guess Who!</h1>
+      <!-- Carousel Container -->
+      <div class="carousel-container">
+        <div
+          id="textCarousel"
+          class="carousel slide rounded-lg shadow-lg carousel-dark"
+          data-bs-wrap="false"
+          data-bs-ride="false"
+        >
+          <!-- Rounded and Shadow added -->
+          <div class="carousel-inner">
+            <!-- First Slide (Text) -->
+            <div class="carousel-item active rounded-lg">
+              <div
+                class="d-flex justify-content-center align-items-center"
+                style="height: 400px"
+              >
+                <div class="carousel-text-container text-center">
+                  <h2>Are you ready to play to Guess Who with an AI?</h2>
+                  <p>
+                    This isn't your ordinary Guess Who - you'll be interacting
+                    with an AI language model to discover a mystery person! Get
+                    ready to learn about AI while having fun!
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        <!-- Second Slide (Image) -->
-        <div class="carousel-item rounded-lg">
-          <div class="d-flex justify-content-center align-items-center" style="height: 400px;">
-            <div class="padded-container">
-              <h2>Slide with Image 1</h2>
-              <img src="https://via.placeholder.com/600x300" alt="Example Image 1" class="img-fluid" />
-              <p>Description for the first image goes here.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Third Slide (Image) -->
-        <div class="carousel-item rounded-lg">
-          <div class="d-flex justify-content-center align-items-center" style="height: 400px;">
-            <div class="padded-container">
-              <h2>Slide with Image 2</h2>
-              <img src="https://via.placeholder.com/600x300" alt="Example Image 2" class="img-fluid" />
-              <p>Description for the second image goes here.</p>
-            </div>
-          </div>
-        </div>
-
-          <!-- Fourth Slide (Text) -->
-          <div class="carousel-item rounded-lg">
-            <div class="d-flex justify-content-center align-items-center" style="height: 400px;">
-              <div class="carousel-text-container text-center">
-                <h2>Slide 4</h2>
-                <p>Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus magna felis sollicitudin mauris.</p>
+            <!-- Second Slide (Image) -->
+            <div class="carousel-item rounded-lg">
+              <div
+                class="d-flex justify-content-center align-items-center"
+                style="height: 400px"
+              >
+                <div class="padded-container">
+                  <h2>How the Game Works</h2>
+                  <ol>
+                    <li>The class splits into two teams.</li>
+                    <li>Team 1 chooses a mystery person and sets up the AI with special instructions.</li>
+                    <li>Team 2 asks questions to the AI to figure out who the mystery person is.</li>
+                    <li>You can ask any yes/no questions about the person.</li>
+                    <li>Try to guess the person in as few questions as possible!</li>
+                  </ol>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Fifth Slide (Text) -->
-          <div class="carousel-item rounded-lg">
-            <div class="d-flex justify-content-center align-items-center" style="height: 400px;">
-              <div class="carousel-text-container text-center">
-                <h2>Slide 5</h2>
-                <p>This is the first additional text slide. Use this space to add more engaging content or instructions for your users.</p>
+            <!-- Third Slide (Image) -->
+            <div class="carousel-item rounded-lg">
+              <div
+                class="d-flex justify-content-center align-items-center"
+                style="height: 400px"
+              >
+                <div class="padded-container">
+                  <h2>Understanding Your AI teammate</h2>
+                  <p> Your AI teammate is a Large Language Model (LLM)! It has
+                      read millions of books and articles. It can understand and
+                      respond to your questions.</p>
+                    <p>It can't see or hear you, so clear writing is important. It's not powerful as our mind, so it can make mistakes</p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Sixth Slide (Text) -->
-          <div class="carousel-item rounded-lg">
-            <div class="d-flex justify-content-center align-items-center" style="height: 400px;">
-              <div class="carousel-text-container text-center">
-                <h2>Ready to Begin?</h2>
+            <!-- Fourth Slide (Text) -->
+            <div class="carousel-item rounded-lg">
+              <div
+                class="d-flex justify-content-center align-items-center"
+                style="height: 400px"
+              >
+                <div class="carousel-text-container text-center">
+                  <h2>Tips for Great Questions</h2>
+                  <p>The key to winning is asking smart questions!</p>
+                  <p>Be specific: "Did this person live in the 20th century?"
+                      works better than "Is that person old?"</p>
+                    <p>One detail at a time: "Was this person a scientist?" is
+                      better than "Was this person a scientist who won awards and
+                      lived in Europe?"</p>
+                  </ol>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fifth Slide (Text) -->
+            <div class="carousel-item rounded-lg">
+              <div
+                class="d-flex justify-content-center align-items-center"
+                style="height: 400px"
+              >
+                <div class="carousel-text-container text-center">
+                  <h2>Ready to Begin?</h2>
                   <p>Click the button below to start the game!</p>
-                  <button id="getStartedBtn" class="btn btn-success btn-lg">Get Started</button>
+                  <button id="getStartedBtn" class="btn btn-success btn-lg">
+                    Get Started
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Indicators (Dot Controls) -->
-        <div class="carousel-indicators">
-          <button type="button" data-bs-target="#textCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-          <button type="button" data-bs-target="#textCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
-          <button type="button" data-bs-target="#textCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
-          <button type="button" data-bs-target="#textCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
-          <button type="button" data-bs-target="#textCarousel" data-bs-slide-to="4" aria-label="Slide 5"></button>
-          <button type="button" data-bs-target="#textCarousel" data-bs-slide-to="5" aria-label="Slide 6"></button>
-        </div>
+          <!-- Indicators (Dot Controls) -->
+          <div class="carousel-indicators">
+            <button
+              type="button"
+              data-bs-target="#textCarousel"
+              data-bs-slide-to="0"
+              class="active"
+              aria-current="true"
+              aria-label="Slide 1"
+            ></button>
+            <button
+              type="button"
+              data-bs-target="#textCarousel"
+              data-bs-slide-to="1"
+              aria-label="Slide 2"
+            ></button>
+            <button
+              type="button"
+              data-bs-target="#textCarousel"
+              data-bs-slide-to="2"
+              aria-label="Slide 3"
+            ></button>
+            <button
+              type="button"
+              data-bs-target="#textCarousel"
+              data-bs-slide-to="3"
+              aria-label="Slide 4"
+            ></button>
+            <button
+              type="button"
+              data-bs-target="#textCarousel"
+              data-bs-slide-to="4"
+              aria-label="Slide 5"
+            ></button>
+          </div>
 
-        <!-- Controls -->
-        <button class="carousel-control-prev" type="button" data-bs-target="#textCarousel" data-bs-slide="prev">
-          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#textCarousel" data-bs-slide="next">
-          <span class="carousel-control-next-icon" aria-hidden="true"></span>
-          <span class="visually-hidden">Next</span>
-        </button>
+          <!-- Controls -->
+          <button
+            class="carousel-control-prev"
+            type="button"
+            data-bs-target="#textCarousel"
+            data-bs-slide="prev"
+          >
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button
+            class="carousel-control-next"
+            type="button"
+            data-bs-target="#textCarousel"
+            data-bs-slide="next"
+          >
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Bootstrap 5 JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    document.getElementById('getStartedBtn').addEventListener('click', () => {
-      window.location.href = '/game_setup';
-    });
-  </script>
-</body>
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      document.getElementById("getStartedBtn").addEventListener("click", () => {
+        window.location.href = "/game_setup";
+      });
+
+      document.addEventListener("DOMContentLoaded", function () {
+        const carousel = document.querySelector("#textCarousel");
+        const prevButton = carousel.querySelector(".carousel-control-prev");
+        const nextButton = carousel.querySelector(".carousel-control-next");
+        const items = carousel.querySelectorAll(".carousel-item");
+
+        function checkitem() {
+          const activeIndex = Array.from(items).findIndex((item) =>
+            item.classList.contains("active")
+          );
+
+          prevButton.style.display = activeIndex === 0 ? "none" : "block";
+          nextButton.style.display =
+            activeIndex === items.length - 1 ? "none" : "block";
+        }
+
+        checkitem();
+
+        carousel.addEventListener("slid.bs.carousel", checkitem);
+      });
+    </script>
+  </body>
 </html>

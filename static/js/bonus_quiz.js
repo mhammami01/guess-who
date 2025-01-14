@@ -128,7 +128,6 @@ function displayAnswerButtons(choices) {
     });
 }
 
-
 function updateTeamStatus() {
     return fetch(`/game/${gameId}/status`)
         .then(response => {
@@ -268,44 +267,59 @@ async function handleErrorResponse(response, message) {
 }
 
 function showWinnerPopup(winnerName) {
+    // Create the popup container
     const popup = document.createElement("div");
     popup.id = "winnerPopup";
-    popup.style.position = "fixed";
-    popup.style.top = "50%";
-    popup.style.left = "50%";
-    popup.style.transform = "translate(-50%, -50%)";
-    popup.style.backgroundColor = "#fff";
-    popup.style.padding = "30px";  // Reduced padding for a less wide layout
-    popup.style.boxShadow = "0px 15px 25px rgba(0, 0, 0, 0.4)";
-    popup.style.zIndex = "1000";
-    popup.style.textAlign = "center";
-    popup.style.borderRadius = "15px";
-    popup.style.maxWidth = "400px";  // Reduced max width for a narrower popup
-    popup.style.width = "80%";  // Slightly reduced width for a more compact look
+    popup.classList.add("winner-popup");
 
-    // Add a header with larger font size and more spacing
+    // Create the header
     const header = document.createElement("h2");
     header.textContent = "Bonus Quiz Over!";
-    header.style.fontSize = "28px";
-    header.style.fontWeight = "bold";
-    header.style.color = "#4CAF50";
-    header.style.marginBottom = "20px";
+    header.classList.add("winner-header");
 
+    // Create the winner text
     const winnerText = document.createElement("p");
-    // Check if it's a tie or a winner
     if (winnerName === "It's a tie!") {
-        winnerText.innerHTML = `<strong style="color: #8b4513;">${winnerName}</strong>`;
+        winnerText.innerHTML = `<strong class="tie-text">${winnerName}</strong>`;
     } else {
-        winnerText.innerHTML = `The game winner is: <strong style="color: #8b4513;">${winnerName}</strong>`;
+        winnerText.innerHTML = `The game winner is: <strong class="winner-name">${winnerName}</strong>`;
     }
-    winnerText.style.fontSize = "20px";
-    winnerText.style.color = "#333";
-    winnerText.style.marginBottom = "30px";
+    winnerText.classList.add("winner-text");
 
-    // Adding some text padding and margin for better readability
+    // Create the trophy icon
+    const icon = document.createElement("img");
+    icon.src =  "../../static/images/trophy.gif"; // Use the variable from HTML
+    icon.alt = "Trophy Icon";
+    icon.classList.add("winner-icon")
+
+    // Buttons for actions
+    const buttonContainer = document.createElement("div");
+    buttonContainer.classList.add("popup-buttons");
+
+    const playAgainButton = document.createElement("button");
+    playAgainButton.textContent = "Play Again";
+    playAgainButton.classList.add("popup-button");
+    playAgainButton.onclick = function() {
+        window.location.href = '/game_setup'; // Redirect to the game page
+    };
+
+    const backButton = document.createElement("button");
+    backButton.textContent = "Back to Initial Page";
+    backButton.classList.add("popup-button");
+    backButton.onclick = function() {
+        window.location.href = '/'; // Redirect to the initial page
+    };
+
+    buttonContainer.appendChild(playAgainButton);
+    buttonContainer.appendChild(backButton);
+
+    // Append elements to the popup
     popup.appendChild(header);
     popup.appendChild(winnerText);
+    popup.appendChild(icon);
+    popup.appendChild(buttonContainer);
 
     // Append the popup to the body
     document.body.appendChild(popup);
 }
+

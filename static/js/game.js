@@ -130,6 +130,10 @@ nextGroupBtn.addEventListener("click", () => {
     true
     );
     update_status();
+    msgerInput.removeAttribute('disabled');
+    hintBtn.removeAttribute('disabled');
+    guessBtn.removeAttribute('disabled');
+    
     nextGroupBtn.style.display = "none";
     buttonsForm.style.display = "block";
     stage = 2;
@@ -337,9 +341,11 @@ async function addPersonToRound(gameId, personName, personDescription) {
                 true
             );
             stage = 2;
+            msgerInput.setAttribute('disabled', true);
+            hintBtn.setAttribute('disabled', true);
+            guessBtn.setAttribute('disabled', true);
             // update_status();
             nextGroupBtn.style.display = "block";
-            buttonsForm.style.display = "block";
         } else {
             appendMessage("ChatBot", BOT_IMG, "left", "Failed to add person. Please try again. choose a new person", true);
             selectedCharacter = null;
@@ -483,47 +489,34 @@ async function endRound(gameId) {
 
 
 function setupGuessingButton() {
-    // Create the popup window for the guess input
+    // Create the popup container
     const popup = document.createElement("div");
-    popup.id = "guessPopup";
-    popup.style.position = "fixed";
-    popup.style.top = "50%";
-    popup.style.left = "50%";
-    popup.style.transform = "translate(-50%, -50%)";
-    popup.style.backgroundColor = "#fff";
-    popup.style.padding = "20px";
-    popup.style.boxShadow = "0px 0px 10px rgba(0, 0, 0, 0.5)";
-    popup.style.zIndex = "1000";
-    popup.style.textAlign = "center";
-
+    popup.className = "popup-container";
+    
     // Create the content of the popup
     const popupContent = `
         <h2>Make a Guess</h2>
-        <br>
         <input type="text" id="guessInput" placeholder="Enter your guess" style="width: 80%; padding: 10px; margin-bottom: 10px;">
         <br>
-        <button id="submitGuessBtn" style="padding: 10px 20px; background: rgb(0, 196, 65); color: white; border: none; border-radius: 5px; cursor: pointer;">Submit</button>
-        <button id="closeGuessPopupBtn" style="padding: 10px 20px; background: rgb(255, 65, 54); color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">Close</button>
+        <button id="submitGuessBtn" class="popup-button">Submit</button>
+        <button id="closeGuessPopupBtn" class="popup-button">Close</button>
     `;
     popup.innerHTML = popupContent;
     document.body.appendChild(popup);
 
-    // Add event listener to the submit button
-    document.getElementById("submitGuessBtn").addEventListener("click", (event) => {
-        event.preventDefault(); // Prevent form submission and page refresh
+    // Add event listeners for buttons
+    document.getElementById("submitGuessBtn").addEventListener("click", () => {
         const guessInput = document.getElementById("guessInput").value.trim();
         if (guessInput) {
-            console.log("Submitting guess:", guessInput);
-            makeGuess(gameId, guessInput); // Call the already implemented makeGuess function
-            document.body.removeChild(popup); // Close the popup after submission
+            makeGuess(gameId, guessInput);
+            document.body.removeChild(popup); // Close popup
         } else {
             alert("Please enter a guess.");
         }
     });
 
-    // Add event listener to the close button
     document.getElementById("closeGuessPopupBtn").addEventListener("click", () => {
-        document.body.removeChild(popup); // Close the popup
+        document.body.removeChild(popup); // Close popup
     });
 }
 
@@ -533,27 +526,20 @@ function setupGuessingButton() {
 
 function showRoundOverPopup(team1_summary, team2_summary) {
     const popup = document.createElement("div");
-    popup.id = "roundOverPopup";
-    popup.style.position = "fixed";
-    popup.style.top = "50%";
-    popup.style.left = "50%";
-    popup.style.transform = "translate(-50%, -50%)";
-    popup.style.backgroundColor = "#fff";
-    popup.style.padding = "20px";
-    popup.style.boxShadow = "0px 0px 10px rgba(0, 0, 0, 0.5)";
-    popup.style.zIndex = "1000";
-    popup.style.textAlign = "center";
-
+    popup.className = "popup-container";
 
     const popupContent = `
-        <h2>Round Over!</h2>
-        <p>Round Summary:</p>
-        <p>Team1: ${team1_summary}</p>
-        <br>
-        <p>Team2: ${team2_summary}</p>
-        <br>
-        <p>Now both teams will be switched up</p>
-        <button id="proceedToNextRound" style="padding: 10px 20px; background: rgb(0, 196, 65); color: white; border: none; border-radius: 5px; cursor: pointer;">Proceed</button>
+        <div class="popup-header">Round Over!</div>
+        <div class="popup-content">
+            <p><strong>Round Summary:</strong></p>
+            <p>Team 1: ${team1_summary}</p>
+            <p>Team 2: ${team2_summary}</p>
+            <div class="popup-divider"></div>
+            <p>Now both teams will be switched up.</p>
+        </div>
+        <div class="popup-footer">
+            <button id="proceedToNextRound" class="popup-button">Proceed</button>
+        </div>
     `;
     popup.innerHTML = popupContent;
     document.body.appendChild(popup);
@@ -562,7 +548,6 @@ function showRoundOverPopup(team1_summary, team2_summary) {
         document.body.removeChild(popup);
         proceedToNextRound();
     });
-
 }
 
 function proceedToNextRound() {
@@ -581,30 +566,26 @@ function proceedToNextRound() {
     buttonsForm.style.display = "none";
 }
 
-function showGameOverPopup(Team1_summary, Team2_summary, winner_text) {
+function showGameOverPopup(team1_summary, team2_summary, winner_text) {
     const popup = document.createElement("div");
-    popup.id = "gameOverPopup";
-    popup.style.position = "fixed";
-    popup.style.top = "50%";
-    popup.style.left = "50%";
-    popup.style.transform = "translate(-50%, -50%)";
-    popup.style.backgroundColor = "#fff";
-    popup.style.padding = "20px";
-    popup.style.boxShadow = "0px 0px 10px rgba(0, 0, 0, 0.5)";
-    popup.style.zIndex = "1000";
-    popup.style.textAlign = "center";
+    popup.className = "popup-container";
 
     const popupContent = `
-        <h2>Game Over!</h2>
-        <p>Game Summary:</p>
-        <p>${Team1_summary}</p>
-        <br>
-        <p>${Team2_summary}</p>
-        <br>
-        <p>${winner_text}</p>
-        <br>
-        <p>Now you can test your knowledge about LLMs and gain some bonus points. Let's proceed to the bonus quiz!</p>
-        <button id="proceedToQuizBtn" style="padding: 10px 20px; background: rgb(0, 196, 65); color: white; border: none; border-radius: 5px; cursor: pointer;">Proceed</button>
+        <div class="popup-header">Game Over!</div>
+        <div class="popup-content">
+            <p><strong>Game Summary:</strong></p>
+            <p>${team1_summary}</p>
+            <p>${team2_summary}</p>
+            <div class="popup-divider"></div>
+            <p class="winner-text">
+                <span class="winner-icon">🏆</span>${winner_text}
+            </p>
+            <div class="popup-divider"></div>
+            <p><strong>Now you can test your knowledge about LLMs and gain some bonus points.<strong></p>
+        </div>
+        <div class="popup-footer">
+            <button id="proceedToQuizBtn" class="popup-button">Proceed</button>
+        </div>
     `;
     popup.innerHTML = popupContent;
     document.body.appendChild(popup);
