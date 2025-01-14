@@ -141,51 +141,54 @@ function handleStage2(input) {
 
 
 function appendMessage(name, img, side, text, isBotMessage) {
-    const msgContainer = document.createElement("div");
-    msgContainer.className = `msg ${side}-msg`;
+    return new Promise((resolve) => {
+        const msgContainer = document.createElement("div");
+        msgContainer.className = `msg ${side}-msg`;
 
-    const msgImg = document.createElement("div");
-    msgImg.className = "msg-img";
-    msgImg.style.backgroundImage = `url(${img})`;
+        const msgImg = document.createElement("div");
+        msgImg.className = "msg-img";
+        msgImg.style.backgroundImage = `url(${img})`;
 
-    const msgBubble = document.createElement("div");
-    msgBubble.className = "msg-bubble";
+        const msgBubble = document.createElement("div");
+        msgBubble.className = "msg-bubble";
 
-    const msgInfo = document.createElement("div");
-    msgInfo.className = "msg-info";
+        const msgInfo = document.createElement("div");
+        msgInfo.className = "msg-info";
 
-    const msgInfoName = document.createElement("div");
-    msgInfoName.className = "msg-info-name";
-    msgInfoName.textContent = name;
+        const msgInfoName = document.createElement("div");
+        msgInfoName.className = "msg-info-name";
+        msgInfoName.textContent = name;
 
-    const msgInfoTime = document.createElement("div");
-    msgInfoTime.className = "msg-info-time";
-    msgInfoTime.textContent = new Date().toLocaleTimeString();
+        const msgInfoTime = document.createElement("div");
+        msgInfoTime.className = "msg-info-time";
+        msgInfoTime.textContent = new Date().toLocaleTimeString();
 
-    msgInfo.appendChild(msgInfoName);
-    msgInfo.appendChild(msgInfoTime);
+        msgInfo.appendChild(msgInfoName);
+        msgInfo.appendChild(msgInfoTime);
 
-    const msgText = document.createElement("div");
-    msgText.className = "msg-text";
+        const msgText = document.createElement("div");
+        msgText.className = "msg-text";
 
-    msgBubble.appendChild(msgInfo);
-    msgBubble.appendChild(msgText);
-    msgContainer.appendChild(msgImg);
-    msgContainer.appendChild(msgBubble);
+        msgBubble.appendChild(msgInfo);
+        msgBubble.appendChild(msgText);
+        msgContainer.appendChild(msgImg);
+        msgContainer.appendChild(msgBubble);
 
-    chatArea.appendChild(msgContainer);
-    chatArea.scrollTop += 500;
+        chatArea.appendChild(msgContainer);
+        chatArea.scrollTop += 500;
 
-    if (isBotMessage) {
-    displayTextWithTypingEffect(msgText, text);
-    } else {
-        if (text.includes("<")) {
-            //msgText.textContent = "test";
-            msgText.innerHTML = text;
+        // Handle the text display, with typing effect for bot messages
+        if (isBotMessage) {
+            displayTextWithTypingEffect(msgText, text, resolve); // Pass resolve to callback
         } else {
-        msgText.textContent = text;
+            if (text.includes("<")) {
+                msgText.innerHTML = text;
+            } else {
+                msgText.textContent = text;
+            }
+            resolve(); // Resolve the promise when the text is added
         }
-    }
+    });
 }
 
 function appendloading(name, img, side, msgContainer) {
@@ -232,13 +235,19 @@ function appendloading(name, img, side, msgContainer) {
     chatArea.scrollTop += 500;
     }
 
-function displayTextWithTypingEffect(element, text) {
+function displayTextWithTypingEffect(element, text, resolve) {
     let i = 0;
-    const interval = setInterval(() => {
-    element.textContent += text[i];
-    i++;
-    if (i >= text.length) clearInterval(interval);
-    }, typingSpeed);
+
+    function type() {
+        if (i < text.length) {
+            element.textContent += text.charAt(i);
+            i++;
+            setTimeout(type, typingSpeed);
+        } else {
+            resolve();
+        }
+    }
+    type();
 }
 
 async function checkGameEnd() {
@@ -361,9 +370,10 @@ async function askQuestion(gameId, question) {
             update_status();
             chatArea.removeChild(msgContainer);
             //appendMessageWithloading("ChatBot", BOT_IMG, "left", `${data.response}`, true, 1);
-            appendMessage("ChatBot", BOT_IMG, "left", `${data.response}`, true);
+            await appendMessage("ChatBot", BOT_IMG, "left", `${data.response}`, true);
             if (data.is_round_finished) {
-                appendMessage("ChatBot", BOT_IMG, "left", "Identity revealed!", true);
+                if (data.identity_revealed)
+                    await appendMessage("ChatBot", BOT_IMG, "left", "Identity revealed!", true);
                 endRound(gameId);
                 //showRoundOverPopup();
                 //showGameOverPopup();
@@ -390,10 +400,11 @@ async function makeGuess(gameId, guess) {
         if (response.ok) {
             const data = await response.json();
             console.log("Guess result:", data);
-            appendMessage("ChatBot", BOT_IMG, "left", data.message, true);
+            await appendMessage("ChatBot", BOT_IMG, "left", data.message, true);
             update_status();
             if (data.is_round_finished) {
-                //appendMessage("ChatBot", BOT_IMG, "left", "Correct identity guessed!", true);
+                if (data.identity_revealed)
+                    await appendMessage("ChatBot", BOT_IMG, "left", "Identity revealed!", true);
                 endRound(gameId);
             }
         } else {
@@ -416,9 +427,9 @@ async function useHint(gameId) {
             const data = await response.json();
             console.log("Hint used:", data);
             update_status();
-            appendMessage("ChatBot", BOT_IMG, "left", `Hint: ${data.hint}`, true);
+            await appendMessage("ChatBot", BOT_IMG, "left", `Hint: ${data.hint}`, true);
             if (data.is_round_finished) {
-                //appendMessage("ChatBot", BOT_IMG, "left", "Correct identity guessed!", true);
+                //await appendMessage("ChatBot", BOT_IMG, "left", "Round is over!", true);
                 endRound(gameId);
             }
         } else {
@@ -459,7 +470,7 @@ async function endRound(gameId) {
 
 
                 showGameOverPopup(team1_summary, team2_summary, winner_text);
-            }   
+            }
             //appendMessage("ChatBot", BOT_IMG, "left", `Round Summary: ${data.round_summary}`, true);
         } else {
             console.error("Failed to end round:", await response.text());
