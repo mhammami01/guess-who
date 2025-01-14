@@ -130,6 +130,10 @@ nextGroupBtn.addEventListener("click", () => {
     true
     );
     update_status();
+    msgerInput.removeAttribute('disabled');
+    hintBtn.removeAttribute('disabled');
+    guessBtn.removeAttribute('disabled');
+    
     nextGroupBtn.style.display = "none";
     buttonsForm.style.display = "block";
     stage = 2;
@@ -328,9 +332,11 @@ async function addPersonToRound(gameId, personName, personDescription) {
                 true
             );
             stage = 2;
+            msgerInput.setAttribute('disabled', true);
+            hintBtn.setAttribute('disabled', true);
+            guessBtn.setAttribute('disabled', true);
             // update_status();
             nextGroupBtn.style.display = "block";
-            buttonsForm.style.display = "block";
         } else {
             appendMessage("ChatBot", BOT_IMG, "left", "Failed to add person. Please try again. choose a new person", true);
             selectedCharacter = null;
