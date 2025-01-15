@@ -41,7 +41,7 @@ def setup_teams():
 def setup_game_parameters(teams):
     print("Configuring game parameters...")
     max_rounds = int(input("Enter the maximum number of rounds: "))
-    game_setup = Game(rounds=[], teams=teams, max_rounds=max_rounds, is_running=True)
+    game_setup = Game(rounds=[], teams=teams, max_rounds=max_rounds, max_exchange_length= float(os.getenv("MAX_EXCHANGE_LENGTH")) ,is_running=True)
     print(f"Game set up with max rounds: {max_rounds}")
     return game_setup
 

@@ -6,8 +6,9 @@ from application.game.game_logic.team import Team
 from application.game.observer_logic.observer import Observable
 
 
+
 class Game:
-    def __init__(self, rounds: List[Round], teams: List[Team], max_rounds: int, is_running: bool, hint_data_source=None):
+    def __init__(self, rounds: List[Round], teams: List[Team], max_rounds: int, max_exchange_length:int,  is_running: bool, hint_data_source=None):
         """
         Represents the overall game, including managing teams, rounds, and game flow.
         """
@@ -15,6 +16,7 @@ class Game:
         if len(teams) != 2:
             raise ValueError("Number of teams must be exactly two.")
         self.teams = teams
+        self.max_exchange_length = max_exchange_length
         self.max_rounds = max_rounds
         self.current_round_index = 0
         self.hint_manager = HintManager()
