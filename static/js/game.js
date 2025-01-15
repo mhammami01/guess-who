@@ -259,7 +259,7 @@ function displayTextWithTypingEffect(element, text, resolve) {
     type();
 }
 
-function update_attempts() {
+async function update_attempts() {
     if (stage === 1) {
         msgerInput.placeholder = "Enter your Response ...";
     } else if (stage === 2) {
@@ -268,10 +268,12 @@ function update_attempts() {
         
     }
     if (current_attempt === max_exchange_length) {
-        setupGuessingButton();
+        document.getElementById("closeGuessPopupBtn").setAttribute('hidden', true);
         msgerInput.setAttribute('disabled', true);
         hintBtn.setAttribute('disabled', true);
         guessBtn.setAttribute('disabled', true);
+        await sleep(2000);
+        setupGuessingButton();
     }
 }
 
@@ -354,7 +356,7 @@ async function addPersonToRound(gameId, personName, personDescription) {
         if (response.ok) {
             const data = await response.json();
             console.log("Person added:", data);
-            appendMessage(
+            await appendMessage(
                 "ChatBot",
                 BOT_IMG,
                 "left",
@@ -370,7 +372,7 @@ async function addPersonToRound(gameId, personName, personDescription) {
             nextGroupBtn.style.display = "block";
             
         } else {
-            appendMessage("ChatBot", BOT_IMG, "left", "Failed to add person. Please try again. choose a new person", true);
+            await appendMessage("ChatBot", BOT_IMG, "left", "Failed to add person. Please try again. choose a new person", true);
             selectedCharacter = null;
         }
     } catch (error) {
@@ -383,7 +385,6 @@ async function askQuestion(gameId, question) {
     try {
         const msgContainer = document.createElement("div");
         msgContainer.className = `msg left-msg`;
-        update_attempts();
         appendloading("ChatBot", BOT_IMG, "left", msgContainer);
 
         const response = await fetch(`/game/${gameId}/round/ask`, {
@@ -397,17 +398,15 @@ async function askQuestion(gameId, question) {
         if (response.ok) {
             const data = await response.json();
             console.log("Question asked:", data);
-            update_status();
             chatArea.removeChild(msgContainer);
-            //appendMessageWithloading("ChatBot", BOT_IMG, "left", `${data.response}`, true, 1);
             await appendMessage("ChatBot", BOT_IMG, "left", `${data.response}`, true);
+            update_attempts();
+            update_status();
             if (data.is_round_finished) {
                 if (data.identity_revealed)
                     await appendMessage("ChatBot", BOT_IMG, "left", "Identity revealed!", true);
                 await sleep(2000);
                 endRound(gameId);
-                //showRoundOverPopup();
-                //showGameOverPopup();
             }
         } else {
             console.error("Failed to ask question:", await response.text());
@@ -463,7 +462,6 @@ async function useHint(gameId) {
             update_attempts();
             await appendMessage("ChatBot", BOT_IMG, "left", `Hint: ${data.hint}`, true);
             if (data.is_round_finished) {
-                //await appendMessage("ChatBot", BOT_IMG, "left", "Round is over!", true);
                 await sleep(2000);
                 endRound(gameId);
             }
@@ -506,7 +504,6 @@ async function endRound(gameId) {
 
                 showGameOverPopup(team1_summary, team2_summary, winner_text);
             }
-            //appendMessage("ChatBot", BOT_IMG, "left", `Round Summary: ${data.round_summary}`, true);
         } else {
             console.error("Failed to end round:", await response.text());
         }
