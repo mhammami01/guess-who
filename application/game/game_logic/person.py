@@ -1,8 +1,8 @@
 import json
-
+import os
 import requests
+from dotenv import load_dotenv
 from llama_index.llms.ollama import Ollama
-from llama_index.llms.openai import OpenAI
 from llama_index.core.llms import ChatMessage, ChatResponse
 
 
@@ -47,7 +47,6 @@ class Person:
 
             # Check for "llama3" model type and make the API request if matched
             elif self.llm == "llama3_remote":
-                # response_content = self.call_llama3_api(question)
                 conversation = "\n".join(
                     f"{msg.role.capitalize()}: {msg.content}"
                     for msg in self.chat_history
@@ -85,7 +84,6 @@ class Person:
         ]
 
     def to_dict(self):
-        # Return the person as a dictionary
         return {
             "name": self.name,
             "description": self.description
@@ -98,14 +96,17 @@ class Person:
         :param question: The user's question.
         :return: The response from the Flask server.
         """
-        api_url = "http://129.70.134.199:8080/query"  # Replace with your actual Flask API endpoint URL
+        load_dotenv()
+        ip_address = os.getenv("REMOTE_IP_ADDRESS")
+        if not ip_address:
+            return "Error: REMOTE_IP_ADDRESS environment variable is not set."
+        api_url = f"http://{ip_address}:8080/query"
         headers = {"Content-Type": "application/json"}
         payload = json.dumps({"message": question})
 
         response = requests.post(api_url, headers=headers, data=payload)
 
         if response.status_code == 200:
-            # Only return the 'response' field, not the entire JSON
             return response.json().get("response", "No response received.")
         else:
             return "Error: Failed to get response from API."
