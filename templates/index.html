@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guess Who Game</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
     <section class="msger">
@@ -105,106 +106,4 @@
     </script>
     
 </body>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-<!--style>
-    :root {
-        --body-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        --msger-bg: #fff;
-        --border: 2px solid #ddd;
-        --left-msg-bg: #ececec;
-        --right-msg-bg: #c87231;
-    }
-
-    html {
-        box-sizing: border-box;
-    }
-
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: inherit;
-    }
-
-    body {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        background-image: var(--body-bg);
-        font-family: Helvetica, sans-serif;
-    }
-
-    .msger {
-        display: flex;
-        flex-flow: column wrap;
-        justify-content: space-between;
-        width: 100%;
-        max-width: 867px;
-        margin: 25px 10px;
-        height: calc(100% - 50px);
-        border: var(--border);
-        border-radius: 5px;
-        background: var(--msger-bg);
-        box-shadow: 0 15px 15px -5px rgba(0, 0, 0, 0.2);
-    }
-
-    .msger-header {
-        font-size: medium;
-        justify-content: space-between;
-        padding: 10px;
-        text-align: center;
-        border-bottom: var(--border);
-        background: #eee;
-        color: #666;
-    }
-
-    .msger-chat {
-        flex: 1;
-        overflow-y: auto;
-        padding: 10px;
-    }
-
-    .game-setup {
-        margin: 20px;
-        text-align: left;
-    }
-
-    .form-group {
-        margin-bottom: 15px;
-    }
-
-    label {
-        display: block;
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-
-    input, select {
-        width: 100%;
-        padding: 8px;
-        font-size: 16px;
-        margin-bottom: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
-
-    .startbutton {
-        text-align: center;
-    }
-
-    .msger-send-btn {
-        padding: 10px 20px;
-        font-size: 16px;
-        cursor: pointer;
-        background: rgb(0, 196, 65);
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        transition: background 0.3s;
-    }
-
-    .msger-send-btn:hover {
-        background: rgb(0, 180, 50);
-    }
-</style-->
 </html>
