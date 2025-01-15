@@ -14,6 +14,8 @@ let stage = 1; // Game stage (1 = character selection, 2 = guessing phase)
 let swap = 0;
 let selectedCharacter = null;
 let constraints = "";
+let max_exchange_length = 0;
+let current_attempt = 0;
 const typingSpeed = 10; // Speed in milliseconds per character
 
 // Get the full URL
@@ -47,6 +49,7 @@ async function update_status() {
             team2Name = gameStatus.teams[0].name;
             team1Score = gameStatus.teams[1].round_score;
             team2Score = gameStatus.teams[0].round_score;
+            max_exchange_length = gameStatus.max_exchange_length;
 
             // Update UI with team names and scores
             if (stage === 1) {
@@ -131,6 +134,7 @@ nextGroupBtn.addEventListener("click", () => {
     true
     );
     update_status();
+    update_attempts();
     msgerInput.removeAttribute('disabled');
     hintBtn.removeAttribute('disabled');
     guessBtn.removeAttribute('disabled');
@@ -255,6 +259,22 @@ function displayTextWithTypingEffect(element, text, resolve) {
     type();
 }
 
+function update_attempts() {
+    if (stage === 1) {
+        msgerInput.placeholder = "Enter your Response ...";
+    } else if (stage === 2) {
+        current_attempt += 1;
+        msgerInput.placeholder = "Ask a question... " + (max_exchange_length - current_attempt + 1) + " attempts remaining (including hints and guesses).";
+        
+    }
+    if (current_attempt === max_exchange_length) {
+        setupGuessingButton();
+        msgerInput.setAttribute('disabled', true);
+        hintBtn.setAttribute('disabled', true);
+        guessBtn.setAttribute('disabled', true);
+    }
+}
+
 async function checkGameEnd() {
     try {
         const response = await fetch(`/game/${gameId}/status`);
@@ -363,6 +383,7 @@ async function askQuestion(gameId, question) {
     try {
         const msgContainer = document.createElement("div");
         msgContainer.className = `msg left-msg`;
+        update_attempts();
         appendloading("ChatBot", BOT_IMG, "left", msgContainer);
 
         const response = await fetch(`/game/${gameId}/round/ask`, {
@@ -412,6 +433,7 @@ async function makeGuess(gameId, guess) {
             console.log("Guess result:", data);
             await appendMessage("ChatBot", BOT_IMG, "left", data.message, true);
             update_status();
+            update_attempts();
             if (data.is_round_finished) {
                 if (data.identity_revealed)
                     await appendMessage("ChatBot", BOT_IMG, "left", "Identity revealed!", true);
@@ -438,6 +460,7 @@ async function useHint(gameId) {
             const data = await response.json();
             console.log("Hint used:", data);
             update_status();
+            update_attempts();
             await appendMessage("ChatBot", BOT_IMG, "left", `Hint: ${data.hint}`, true);
             if (data.is_round_finished) {
                 //await appendMessage("ChatBot", BOT_IMG, "left", "Round is over!", true);
@@ -563,9 +586,14 @@ function proceedToNextRound() {
 
     // Reset stage to 1 for character selection
     stage = 1;
+    current_attempt = 0;
     selectedCharacter = null;
     constraints = "";
     update_status();
+    update_attempts();
+    msgerInput.removeAttribute('disabled');
+    hintBtn.removeAttribute('disabled');
+    guessBtn.removeAttribute('disabled');
 
     // Hide buttons not needed for character selection
     nextGroupBtn.style.display = "none";

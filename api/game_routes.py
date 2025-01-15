@@ -113,6 +113,10 @@ def create_game():
 
     # Retrieve max_rounds from the JSON, default to 5 if not provided
     max_rounds = data.get('max_rounds', 5)
+
+    # Retrieve max_exchange_length from the dotenv file
+    max_exchange_length = float(os.getenv("MAX_EXCHANGE_LENGTH")) 
+
     team_a_name = data.get('team_a_name')
     team_b_name = data.get('team_b_name')
 
@@ -135,6 +139,7 @@ def create_game():
         rounds=[],
         teams=[team_a, team_b],
         max_rounds=max_rounds,
+        max_exchange_length= max_exchange_length,
         is_running=is_running,
         hint_data_source=None  # Placeholder if needed
     )
@@ -146,6 +151,7 @@ def create_game():
     return jsonify({
         "game_id": game_id,
         "max_rounds": max_rounds,
+        "max_exchange_length": max_exchange_length,
         "teams": [
             {
                 "name": team_a.name,
@@ -243,6 +249,7 @@ def get_game_status(game_id):
     # Prepare the game status response
     game_status = {
         "game_id": game_id,
+        "max_exchange_length" : game.max_exchange_length,
         "game_status": 'finished' if game.is_game_over() else 'in_progress',
         "quiz_status": 'active' if quiz_manager and quiz_manager.is_running else 'not_active',
         "teams": [
