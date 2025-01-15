@@ -304,10 +304,10 @@ function showWinnerPopup(winnerName) {
     };
 
     const backButton = document.createElement("button");
-    backButton.textContent = "Back to Initial Page";
+    backButton.textContent = "proceed";
     backButton.classList.add("popup-button");
     backButton.onclick = function() {
-        window.location.href = '/'; // Redirect to the initial page
+        window.location.href = '/final_carousel'; // Redirect to the initial page
     };
 
     buttonContainer.appendChild(playAgainButton);
