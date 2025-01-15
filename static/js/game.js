@@ -464,14 +464,14 @@ async function endRound(gameId) {
             const data = await response.json();
             console.log("Round ended", data);
             if (current_round < rounds) {
-                team1_summary = data.round_summary.team1.name + ": you have reached in this round " + data.round_summary.team1.round_score + " points";
-                team2_summary = data.round_summary.team2.name + ": you have reached in this round " + data.round_summary.team2.round_score  + " points";
+                team1_summary = data.round_summary.team1.name + ": you have reached " + data.round_summary.team1.round_score + " points in this round";
+                team2_summary = data.round_summary.team2.name + ": you have reached " + data.round_summary.team2.round_score  + " points in this round";
                 current_round += 1;
                 showRoundOverPopup(team1_summary, team2_summary);
             } else {
                 const gameStatus = await getGameStatus(gameId);
-                team1_summary =  gameStatus.teams[0].name + ": you have reached in this game " + gameStatus.teams[0].total_score + " points";
-                team2_summary =  gameStatus.teams[1].name + ": you have reached in this game " + gameStatus.teams[1].total_score + " points";
+                team1_summary =  gameStatus.teams[0].name + ": you have reached " + gameStatus.teams[0].total_score + " points in this game";
+                team2_summary =  gameStatus.teams[1].name + ": you have reached " + gameStatus.teams[1].total_score + " points in this game";
                 if (gameStatus.teams[0].total_score > gameStatus.teams[1].total_score) {
                     winner_text = gameStatus.teams[0].name + " is the winner!";
                 } else if (gameStatus.teams[0].total_score < gameStatus.teams[1].total_score) {
