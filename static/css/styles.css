@@ -308,7 +308,7 @@
   }
 
 .answer-button:hover {
-    background-color: #c87231;;
+    background-color: #c87231;
 }
 
 
@@ -356,7 +356,7 @@
 }
 
 .popup-button:hover {
-  background-color: var(--left-msg-bg);
+  background-color: #c87231;
 }
 
 .popup-divider {
