@@ -20,8 +20,8 @@ class LLMInitializer:
                 raise ValueError("OPENAI_API_KEY is not set in the environment.")
             return OpenAI(model_name="gpt-4o-mini", openai_api_key=openai_api_key)
         elif llm_provider == "phi":
-            return Ollama(model="phi3", request_timeout=60.0)
+            return Ollama(model="phi3", request_timeout=100.0)
         elif llm_provider == "llama3_remote":
-            return "llama3"
+            return "llama3_remote"
         else:
             raise ValueError(f"Unsupported LLM provider: {llm_provider}")
