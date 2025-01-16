@@ -100,3 +100,4 @@ yarl==1.17.2
 
 flasgger~=0.9.7.1
 scikit-learn~=1.6.0
+ollama~=0.4.4
