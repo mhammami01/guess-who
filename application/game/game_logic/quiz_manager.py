@@ -129,6 +129,96 @@ class QuizManager(Observable):
                     "By waiting for the LLM to finish processing"
                 ],
                 "correct_answer": "By hiding misleading instructions in the question"
+            },
+            {
+                "question": "Which of these is not typically a capability of modern LLMs?",
+                "choices": [
+                    "Writing creative stories",
+                    "Answering questions",
+                    "Physically moving objects",
+                    "Solving math problems"
+                ],
+                "correct_answer": "Physically moving objects"
+            },
+            {
+                "question": "What kind of data are LLMs primarily trained on?",
+                "choices": [
+                    "Only mathematical equations",
+                    "Only images",
+                    "Text from various sources",
+                    "Only spoken words"
+                ],
+                "correct_answer": "Text from various sources"
+            },
+            {
+                "question": "Which of these best describes how an LLM works?",
+                "choices": [
+                    "It memorizes exact answers to every possible question",
+                    "It learns patterns from large amounts of text data",
+                    "It connects directly to the internet for answers",
+                    "It runs simple if-then statements"
+                ],
+                "correct_answer": "It learns patterns from large amounts of text data"
+            },
+            {
+                "question": "What is meant by 'prompt' when working with LLMs?",
+                "choices": [
+                    "A timer that limits the AI's response time",
+                    "The input or instruction given to the AI",
+                    "The AI's final answer",
+                    "A programming language for AI"
+                ],
+                "correct_answer": "The input or instruction given to the AI"
+            },
+            {
+                "question": "Why do LLMs sometimes make mistakes?",
+                "choices": [
+                    "They are intentionally programmed to be wrong sometimes",
+                    "They work by predicting patterns, which isn't always perfect",
+                    "They only know answers from one textbook",
+                    "They run out of computing power"
+                ],
+                "correct_answer": "They work by predicting patterns, which isn't always perfect"
+            },
+            {
+                "question": "Which of these is an example of responsible AI use in education?",
+                "choices": [
+                    "Using AI to completely write your homework",
+                    "Using AI to check your grammar and get feedback",
+                    "Using AI to impersonate your teacher",
+                    "Using AI to hack into school systems"
+                ],
+                "correct_answer": "Using AI to check your grammar and get feedback"
+            },
+            {
+                "question": "What is 'hallucination' in the context of LLMs?",
+                "choices": [
+                    "When the AI crashes and stops working",
+                    "When the AI generates false or incorrect information",
+                    "When the AI learns new information",
+                    "When the AI copies from the internet"
+                ],
+                "correct_answer": "When the AI generates false or incorrect information"
+            },
+            {
+                "question": "Which of these helps make AI interactions more accurate?",
+                "choices": [
+                    "Typing in all capital letters",
+                    "Using emojis",
+                    "Writing clear and specific instructions",
+                    "Making the prompt as short as possible"
+                ],
+                "correct_answer": "Writing clear and specific instructions"
+            },
+            {
+                "question": "What is an important ethical consideration when using AI?",
+                "choices": [
+                    "Always keeping AI interactions private",
+                    "Being aware of AI limitations and potential biases",
+                    "Only using AI during daytime",
+                    "Using AI only for entertainment"
+                ],
+                "correct_answer": "Being aware of AI limitations and potential biases"
             }
         ]
         self.questions_per_team = 5
