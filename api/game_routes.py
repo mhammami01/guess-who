@@ -1,10 +1,7 @@
 import os
 from typing import Dict
-
-from dotenv import load_dotenv
 from flasgger import swag_from
 from flask import Blueprint, request, jsonify
-from llama_index.llms.openai import OpenAI
 from application.game.game_logic.game import Game
 from application.game.game_logic.llm import LLMInitializer
 from application.game.game_logic.person import Person
@@ -78,6 +75,11 @@ quizzes: Dict[str, QuizManager] = {}
                         'description': 'The maximum number of rounds for the game.',
                         'example': 5
                     },
+                    'max_exchange_length': {
+                        'type': 'number',
+                        'description': 'The maximum exchange length, retrieved from the environment.',
+                        'example': 10
+                    },
                     'teams': {
                         'type': 'array',
                         'items': {
@@ -93,6 +95,18 @@ quizzes: Dict[str, QuizManager] = {}
                         'type': 'boolean',
                         'description': 'game status',
                         'example': True
+                    }
+                }
+            }
+        },
+        415: {
+            'description': 'Invalid JSON or Content-Type.',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'error': {
+                        'type': 'string',
+                        'example': "Invalid JSON. Please ensure your request has 'Content-Type: application/json'."
                     }
                 }
             }
@@ -115,7 +129,7 @@ def create_game():
     max_rounds = data.get('max_rounds', 5)
 
     # Retrieve max_exchange_length from the dotenv file
-    max_exchange_length = float(os.getenv("MAX_EXCHANGE_LENGTH")) 
+    max_exchange_length = int(os.getenv("MAX_EXCHANGE_LENGTH"))
 
     team_a_name = data.get('team_a_name')
     team_b_name = data.get('team_b_name')
@@ -139,7 +153,7 @@ def create_game():
         rounds=[],
         teams=[team_a, team_b],
         max_rounds=max_rounds,
-        max_exchange_length= max_exchange_length,
+        max_exchange_length=max_exchange_length,
         is_running=is_running,
         hint_data_source=None  # Placeholder if needed
     )
@@ -188,6 +202,11 @@ def create_game():
                 'type': 'object',
                 'properties': {
                     'game_id': {'type': 'string'},
+                    'max_exchange_length': {
+                        'type': 'number',
+                        'description': 'The maximum exchange length for the game.',
+                        'example': 10
+                    },
                     'game_status': {'type': 'string'},
                     'quiz_status': {'type': 'string'},
                     'teams': {
@@ -214,7 +233,7 @@ def create_game():
                                         'description': {'type': 'string'}
                                     }
                                 },
-                                'status': {'type': 'string', 'enum': ['in_progress', 'finished']},
+                                'round_status': {'type': 'string', 'enum': ['in_progress', 'finished']},
                                 'llm_team': {
                                     'type': 'object',
                                     'properties': {
@@ -249,7 +268,7 @@ def get_game_status(game_id):
     # Prepare the game status response
     game_status = {
         "game_id": game_id,
-        "max_exchange_length" : game.max_exchange_length,
+        "max_exchange_length": game.max_exchange_length,
         "game_status": 'finished' if game.is_game_over() else 'in_progress',
         "quiz_status": 'active' if quiz_manager and quiz_manager.is_running else 'not_active',
         "teams": [
@@ -301,6 +320,11 @@ def get_game_status(game_id):
                 'type': 'object',
                 'properties': {
                     'round_id': {'type': 'string', 'example': 'round_1'},
+                    'is_finished': {
+                        'type': 'boolean',
+                        'description': 'Indicates whether the round is finished.',
+                        'example': False
+                    },
                     'game_id': {'type': 'string'},
                     'teams': {
                         'type': 'object',
@@ -395,10 +419,28 @@ def start_round(game_id):
             }
         },
         404: {
-            'description': 'Game or Round not found.'
+            'description': 'Game or Round not found.',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'error': {
+                        'type': 'string',
+                        'example': "Game with ID 'game_1' not found."
+                    }
+                }
+            }
         },
         400: {
-            'description': 'Person with the same name already exists.'
+            'description': 'Person with the same name already exists.',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'error': {
+                        'type': 'string',
+                        'example': "Person with name 'Albert Einstein' already exists."
+                    }
+                }
+            }
         }
     }
 })
@@ -474,12 +516,28 @@ def create_person_and_add_to_round(game_id):
                 'properties': {
                     'question': {'type': 'string'},
                     'response': {'type': 'string'},
-                    'identity_revealed': {'type': 'boolean'}
+                    'identity_revealed': {'type': 'boolean'},
+                    'is_round_finished': {'type': 'boolean'}
                 }
             }
         },
         404: {
-            'description': 'Game not found.'
+            'description': 'Game or Person not found.',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'error': {'type': 'string', 'example': "Person not found in this round."}
+                }
+            }
+        },
+        400: {
+            'description': 'Question is missing.',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'error': {'type': 'string', 'example': "Question is required."}
+                }
+            }
         }
     }
 })
@@ -549,12 +607,28 @@ def ask_question(game_id):
                 'type': 'object',
                 'properties': {
                     'identity_revealed': {'type': 'boolean'},
-                    'message': {'type': 'string'}
+                    'message': {'type': 'string'},
+                    'is_round_finished': {'type': 'boolean'}
                 }
             }
         },
         404: {
-            'description': 'Game not found.'
+            'description': 'Game not found.',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'error': {'type': 'string', 'example': "Game with ID 'game_1' not found."}
+                }
+            }
+        },
+        400: {
+            'description': 'Guess is missing.',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'error': {'type': 'string', 'example': "Guess is required."}
+                }
+            }
         }
     }
 })
@@ -602,12 +676,19 @@ def make_guess_in_round(game_id):
             'schema': {
                 'type': 'object',
                 'properties': {
-                    'hint': {'type': 'string'}
+                    'hint': {'type': 'string'},
+                    'is_round_finished': {'type': 'boolean'}
                 }
             }
         },
         404: {
-            'description': 'Round not found.'
+            'description': 'Round not found.',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'error': {'type': 'string', 'example': "Game with ID 'game_1' not found."}
+                }
+            }
         }
     }
 })
@@ -655,7 +736,13 @@ def use_hint_in_round(game_id):
             }
         },
         404: {
-            'description': 'Round not found.'
+            'description': 'Game not found.',
+            'schema': {
+                'type': 'object',
+                'properties': {
+                    'error': {'type': 'string', 'example': "Game with ID 'game_1' not found."}
+                }
+            }
         }
     }
 })
@@ -665,7 +752,6 @@ def end_round(game_id):
         return jsonify({"error": f"Game with ID '{game_id}' not found."}), 404
 
     round_summary = game.end_round()
-    # is_game_over = game.is_game_over()
 
     return jsonify({"round_summary": round_summary})
 
