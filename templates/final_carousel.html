@@ -1,263 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Guess Who Game</title>
-    <!-- Bootstrap 5 CSS -->
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}"> <!-- Internal Css-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-      :root {
-        --body-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        --msger-bg: #fff;
-        --border: 2px solid #ddd;
-        --left-msg-bg: #ececec;
-        --right-msg-bg: #c87231;
-        --carousel-bg: #f1f1f1; /* Light greyish color */
-      }
-      body {
-        background-image: var(--body-bg);
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin: 0;
-      }
-      .carousel-container {
-        width: 100%;
-        max-width: 900px; /* Increased the max-width of the carousel */
-        margin: 0 auto;
-      }
-
-      /* Ensure the carousel container and items have rounded corners */
-      .carousel {
-        border-radius: 0.75rem; /* Rounded corners for the carousel */
-        overflow: hidden; /* Prevents overflow during transitions */
-      }
-
-      .carousel-item {
-        height: 600px; /* Increased height of carousel items */
-        background-color: var(
-          --carousel-bg
-        ); /* Consistent light grey background */
-        border-radius: 0.75rem; /* Apply rounded corners to each item */
-        overflow: hidden; /* Prevent content overflow during transition */
-        padding: 70px;
-        background-image: url('../../static/images/background.jpg');
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;  
-      }
-
-      .carousel-item h2{
-        font-size: 2.5rem
-      }
-
-      .carousel-item p{
-        font-size: 1.3rem
-      }
-      
-      .carousel-item ul{
-        font-size: 1.3rem
-      }
-
-      .padded-container ol {
-        list-style: none;
-        counter-reset: game-steps;
-        padding-left: 0;
-        margin: 0;
-        text-align: left;
-        max-width: 80%;
-        margin: 0 auto;
-      }
-
-      .padded-container ol li {
-        counter-increment: game-steps;
-        margin-bottom: 1rem;
-        position: relative;
-        padding-left: 2.5rem;
-        font-size: 1.3rem;
-      }
-
-      .padded-container ol li::before {
-        content: counter(game-steps) ".";
-        position: absolute;
-        left: 0;
-        font-weight: bold;
-        color: #333;
-      }
-
-      /* Make sure carousel controls are outside of the rounded corners */
-      .carousel-control-prev,
-      .carousel-control-next {
-        z-index: 1;
-        border-radius: 50%; /* Round the controls */
-      }
-
-      .carousel-control-prev-icon,
-      .carousel-control-next-icon {
-        filter: invert(
-          1
-        ); /* Inverts the icon color for better contrast on dark background */
-      }
-
-      /* Styling for the heading */
-      .carousel-heading {
-        font-size: 3.5rem;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 40px;
-        text-align: center;
-        width: 100%; /* Ensure it spans the full width */
-      }
-
-      /* New container for text with limited width and height */
-      .carousel-text-container {
-        max-width: 80%; /* Limit the width */
-        max-height: 500px; /* Limit the height */
-        overflow: auto; /* Enable scroll if the text overflows */
-        margin: 0 auto;
-      }
-      .padded-container {
-        padding: 40px; /* Increased padding around content */
-        margin: 0 auto; /* Centers content */
-        max-width: 80%; /* Limits the width of the content */
-        text-align: center; /* Centers text and images */
-      }
-
-      .padded-container img {
-        max-width: 100%; /* Ensures the image is responsive */
-        margin-bottom: 15px; /* Adds space below the image */
-        border: 2px solid #ddd; /* Optional: Border around the image */
-        border-radius: 0.75rem; /* Rounded corners for the image */
-      }
-
-      .padded-container h2 {
-        margin-top: 60px; /* Adds space above the heading */
-        margin-bottom: 20px; /* Adds space below the heading */
-        font-size: 1.8rem; /* Optional: Adjusts the font size for balance */
-      }
-
-      .padded-container p {
-        margin-bottom: 10px; /* Space below the paragraph */
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Wrapper for heading and carousel -->
-    <div class="w-100 d-flex flex-column align-items-center">
-      <!-- Heading -->
-      <h1 class="carousel-heading">Welcome to securities of llms!</h1>
-      <!-- Carousel Container -->
-      <div class="carousel-container">
-        <div
-          id="textCarousel"
-          class="carousel slide rounded-lg shadow-lg carousel-dark"
-          data-bs-wrap="false"
-          data-bs-ride="false"
-        >
-          <!-- Rounded and Shadow added -->
-          <div class="carousel-inner">
-            <!-- First Slide (Text) -->
-            <div class="carousel-item active rounded-lg">
-                <div class="msg left-msg">
-                  <div class="msg-img" style="background-image: url('{{ url_for('static', filename='images/chatbot.svg') }}');"></div>
-                  <div class="msg-bubble" style="max-width: 90%; padding: 5px; border-radius: 5px;">
-                      <div class="msg-text">
-                          <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
-                            <div class="carousel-text-container text-center">
-                              <!--Add your slide content here-->
-                              <h2>Lorem ipsum dolor sit amet</h2>
-                              <p>
-                                Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod
-                              </p>
-                              <p>
-                                Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod
-                              </p>
-                              <p>
-                                Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod
-                              </p>
-                              <p>
-                                Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod
-                              </p>
-                              <p>
-                                Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod
-                              </p>
-                              
-                            </div>
-                          </div>
-                      </div>
-                  </div>
-                </div>  
-              </div>             
-            </div>
-
-          <!-- Indicators (Dot Controls) -->
-          <div class="carousel-indicators">
-            <button
-              type="button"
-              data-bs-target="#textCarousel"
-              data-bs-slide-to="0"
-              class="active"
-              aria-current="true"
-              aria-label="Slide 1"
-            ></button>
-          </div>
-
-          <!-- Controls -->
-          <button
-            class="carousel-control-prev"
-            type="button"
-            data-bs-target="#textCarousel"
-            data-bs-slide="prev"
-          >
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-          </button>
-          <button
-            class="carousel-control-next"
-            type="button"
-            data-bs-target="#textCarousel"
-            data-bs-slide="next"
-          >
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Bootstrap 5 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-      document.getElementById("getStartedBtn").addEventListener("click", () => {
-        window.location.href = "/game_setup";
-      });
-
-      document.addEventListener("DOMContentLoaded", function () {
-        const carousel = document.querySelector("#textCarousel");
-        const prevButton = carousel.querySelector(".carousel-control-prev");
-        const nextButton = carousel.querySelector(".carousel-control-next");
-        const items = carousel.querySelectorAll(".carousel-item");
-
-        function checkitem() {
-          const activeIndex = Array.from(items).findIndex((item) =>
-            item.classList.contains("active")
-          );
-
-          prevButton.style.display = activeIndex === 0 ? "none" : "block";
-          nextButton.style.display =
-            activeIndex === items.length - 1 ? "none" : "block";
+        :root {
+          --body-bg: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+          --msger-bg: #fff;
+          --border: 2px solid #ddd;
+          --left-msg-bg: #ececec;
+          --right-msg-bg: #c87231;
+          --carousel-bg: #f1f1f1;
         }
 
-        checkitem();
+        body {
+            background-image: var(--body-bg);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
 
-        carousel.addEventListener("slid.bs.carousel", checkitem);
+        .carousel-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .carousel {
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+
+        .carousel-item {
+            height: 600px;
+            background-color: var(--carousel-bg);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            padding: 70px;
+            background-image: url('../../static/images/background.jpg');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        .carousel-item h2 {
+            font-size: 2.5rem
+        }
+
+        .carousel-item p {
+            font-size: 1.3rem
+        }
+
+        .carousel-heading {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 40px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .carousel-text-container {
+            max-width: 80%;
+            max-height: 500px;
+            overflow: auto;
+            margin: 0 auto;
+        }
+
+        .msg {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .msg-img {
+            width: 60px;
+            height: 60px;
+            background-color: var(--carousel-bg);
+        }
+
+        padded-container h2 {
+          margin-top: 60px; /* Adds space above the heading */
+          margin-bottom: 20px; /* Adds space below the heading */
+          font-size: 1.8rem; /* Optional: Adjusts the font size for balance */
+        }
+  
+        .padded-container p {
+          margin-bottom: 10px; /* Space below the paragraph */
+        }
+        padded-container ol {
+          list-style: none;
+          counter-reset: game-steps;
+          padding-left: 0;
+          margin: 0;
+          text-align: left;
+          max-width: 80%;
+          margin: 0 auto;
+        }
+  
+        .padded-container ol li {
+          counter-increment: game-steps;
+          margin-bottom: 1rem;
+          position: relative;
+          padding-left: 2.5rem;
+          font-size: 1.3rem;
+        }
+  
+        .padded-container ol li::before {
+          content: counter(game-steps) ".";
+          position: absolute;
+          left: 0;
+          font-weight: bold;
+          color: #333;
+        }
+        .padded-container {
+          padding: 40px; /* Increased padding around content */
+          margin: 0 auto; /* Centers content */
+          max-width: 80%; /* Limits the width of the content */
+          text-align: center; /* Centers text and images */
+        }
+  
+        .padded-container img {
+          max-width: 100%; /* Ensures the image is responsive */
+          margin-bottom: 15px; /* Adds space below the image */
+          border: 2px solid #ddd; /* Optional: Border around the image */
+          border-radius: 0.75rem; /* Rounded corners for the image */
+        }
+    </style>
+</head>
+<body>
+    <div class="w-100 d-flex flex-column align-items-center">
+        <h1 class="carousel-heading">Securities of LLMs!</h1>
+        <div class="carousel-container">
+            <div id="textCarousel" class="carousel slide rounded-lg shadow-lg carousel-dark" data-bs-wrap="false" data-bs-ride="false" data-bs-interval="false">
+                <div class="carousel-inner">
+                    <!-- First Slide -->
+                    <div class="carousel-item active rounded-lg">
+                        <div class="msg left-msg">
+                          <div class="msg-text">
+                                <div class="d-flex justify-content-center align-items-center" style="height: 400px;">
+                                    <div class="padded-container">
+                                        <h2>Personal Data Security</h2>
+                                        <p>Never share sensitive information: Avoid inputting personal data, passwords, or confidential information into LLMs.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Second Slide -->
+                    <div class="carousel-item rounded-lg">
+                        <div class="msg left-msg">
+                      
+                            <div class="msg-text">
+                                <div class="d-flex justify-content-center align-items-center" style="height: 400px;">
+                                    <div class="padded-container">
+                                        <h2>Information Verification</h2>
+                                        <p>Always verify important information: LLMs can make mistakes or "hallucinate" false information. Double-check critical facts from reliable sources.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Third Slide -->
+                    <div class="carousel-item rounded-lg">
+                        <div class="msg left-msg">
+                      
+                            <div class="msg-text">
+                                <div class="d-flex justify-content-center align-items-center" style="height: 400px;">
+                                    <div class="padded-container">
+                                        <h2>Critical Thinking</h2>
+                                        <p>Critical thinking is essential: LLMs can present incorrect information confidently. Always maintain a healthy skepticism and verify important claims.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fourth Slide -->
+                    <div class="carousel-item rounded-lg">
+                        <div class="msg left-msg">
+                            <div class="msg-text">
+                                <div class="d-flex justify-content-center align-items-center" style="height: 400px;">
+                                    <div class="padded-container">
+                                        <h2>Responsible Use</h2>
+                                        <p>Use responsibly: Don't use LLMs to generate harmful content, spread misinformation, or bypass educational learning objectives.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Indicators -->
+                <div class="carousel-indicators">
+                    <button type="button" data-bs-target="#textCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                    <button type="button" data-bs-target="#textCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                    <button type="button" data-bs-target="#textCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                    <button type="button" data-bs-target="#textCarousel" data-bs-slide-to="3" aria-label="Slide 4"></button>
+                </div>
+
+                <!-- Controls -->
+                <button class="carousel-control-prev" type="button" data-bs-target="#textCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#textCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Wait for the DOM to be fully loaded
+      document.addEventListener("DOMContentLoaded", function () {
+          const carousel = document.querySelector("#textCarousel");
+          const prevButton = carousel.querySelector(".carousel-control-prev");
+          const nextButton = carousel.querySelector(".carousel-control-next");
+          const items = carousel.querySelectorAll(".carousel-item");
+
+          // Function to check which slide is active and hide/show arrows accordingly
+          function checkItem() {
+              const activeIndex = Array.from(items).findIndex(item =>
+                  item.classList.contains("active")
+              );
+
+              // Hide prev button on first slide, hide next button on last slide
+              prevButton.style.display = activeIndex === 0 ? "none" : "block";
+              nextButton.style.display = activeIndex === items.length - 1 ? "none" : "block";
+          }
+
+          // Run on page load
+          checkItem();
+
+          // Run when the carousel slides
+          carousel.addEventListener("slid.bs.carousel", checkItem);
+          
+          // Also run when slide starts (optional, for smoother transitions)
+          carousel.addEventListener("slide.bs.carousel", checkItem);
       });
-    </script>
-  </body>
+  </script>
+</body>
 </html>
