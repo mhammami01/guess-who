@@ -268,12 +268,13 @@ async function update_attempts() {
         
     }
     if (current_attempt === max_exchange_length) {
-        document.getElementById("closeGuessPopupBtn").setAttribute('hidden', true);
+        console.log("Max attempts reached");
         msgerInput.setAttribute('disabled', true);
         hintBtn.setAttribute('disabled', true);
         guessBtn.setAttribute('disabled', true);
         await sleep(2000);
         setupGuessingButton();
+        document.getElementById("closeGuessPopupBtn").setAttribute('hidden', true);
     }
 }
 

@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from typing import Union, Tuple
-
+import time
 import requests
 from dotenv import load_dotenv
 
@@ -113,7 +113,12 @@ class Round(Observable):
                               points=float(os.getenv("POINTS_FOR_QUESTION")),
                               question=question)
 
+
+        start_time = time.time()
         response = self.person.ask_question_to_llm(question)
+        elapsed_time = time.time() - start_time
+        print(f"LLM Response Time: {elapsed_time:.2f} seconds")
+        
         response_content = response.message.content
 
         # Save the interaction in exchange history
