@@ -4,19 +4,24 @@ from application.game.game_logic.game import Game
 from application.game.game_logic.llm import LLMInitializer
 from application.game.game_logic.person import Person
 from application.game.game_logic.quiz_manager import QuizManager
+from application.game.game_logic.round import Round
 from application.game.game_logic.score import Score
 from application.game.game_logic.team import Team
 
 
 # Step 1a: Setup Person
 def setup_person():
-    person_name = input("Enter the name of the person to be guessed: ")
-    person_description = input("Enter a system message for the person to be guessed: ")
+    while True:
+        person_name = input("Enter the name of the person to be guessed: ")
+        person_description = input("Enter a system message for the person to be guessed: ")
 
-    llm = LLMInitializer.initialise_llm()
-    person_llm = Person(name=person_name, description=person_description, llm=llm)
-    print(f"Person set up: {person_llm.name}")
-    return person_llm
+        if Round.is_person_famous(person_name):
+            llm = LLMInitializer.initialise_llm()
+            person_llm = Person(name=person_name, description=person_description, llm=llm)
+            print(f"Person set up: {person_llm.name}")
+            return person_llm
+        else:
+            print(f"'{person_name}' is not recognized as a famous person. Please try another name.")
 
 
 # Step 1b: Setup Teams

@@ -462,6 +462,11 @@ def create_person_and_add_to_round(game_id):
     if person_name in persons:
         return jsonify({"error": f"Person with name '{person_name}' already exists."}), 400
 
+        # Validate if the person is famous on Wikipedia
+    if not current_round.is_person_famous(person_name):
+        return jsonify(
+            {"error": f"Person with name '{person_name}' is not famous or not recognized on Wikipedia."}), 400
+
     # Initialize the Person instance
     llm = LLMInitializer.initialise_llm()
     person = Person(name=person_name, description=person_description, llm=llm)

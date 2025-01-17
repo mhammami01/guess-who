@@ -2,6 +2,7 @@ import os
 import numpy as np
 from typing import Union, Tuple
 
+import requests
 from dotenv import load_dotenv
 
 from application.game.game_logic.exchange_history import Exchange
@@ -221,3 +222,32 @@ class Round(Observable):
         self.exchange_history.clear_exchange_history()
         self.hints_used = 0
         # TODO: More?
+
+    @staticmethod
+    def is_person_famous(name: str) -> bool:
+        """
+        Checks if the given person is famous by verifying their existence on Wikipedia.
+        :param name: The name of the person to check.
+        :return: True if the person has a Wikipedia page, False otherwise.
+        """
+        wikipedia_url = "https://en.wikipedia.org/w/api.php"
+        params = {
+            'action': 'query',
+            'titles': name,
+            'format': 'json'
+        }
+
+        try:
+            response = requests.get(wikipedia_url, params=params)
+            response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
+            data = response.json()
+
+            # Extract the pages information
+            pages = data.get("query", {}).get("pages", {})
+            if pages and "-1" not in pages:
+                return True  # Page exists
+            return False  # Page does not exist
+
+        except requests.exceptions.RequestException as e:
+            print(f"Error querying Wikipedia API: {e}")
+            return False
