@@ -1,16 +1,19 @@
 ## Environment setup
-1. create a new conda environment:
+1. install python 3.12
+
+2. create a new venv environment:
 ```
-conda create -n ai-guardians python=3.12
-conda activate ai-guardians
+python3.12 -m venv venv
 ```
-2. install required libraries:
+
+3. activate the venv environment
+```
+source venv/bin/activate
+```
+
+4. install required libraries:
 ```  
 pip install -r requirements.txt
-```
-## Start the App
-```
-python3 app.py
 ```
 
 The HTML pages can be found in the templates folder.
@@ -105,3 +108,9 @@ POINTS_FOR_GUESS=1.0
 The in-game parameters are set to default values here and can be adapted to change the game flow.
 The OpenAI API key is optional and only needs to be inserted if you want to run the game using a GPT model. 
 
+## Start the App
+```
+python3 app.py
+```
+
+You can now run the app in your browser. We tested Firefox and Chrome.
