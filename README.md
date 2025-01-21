@@ -1,78 +1,97 @@
 ## Environment setup
-1. install python 3.12
+### 1. install python 3.12
 
-2. create a new venv environment:
+### 2. create a new venv environment:
 ```
 python3.12 -m venv venv
 ```
 
-3. activate the venv environment
+### 3. activate the venv environment
+#### Linux/Mac:
 ```
 source venv/bin/activate
 ```
 
-4. install required libraries:
+#### Windows:
+```
+venv\Scripts\activate
+```
+
+### 4. install required libraries:
 ```  
 pip install -r requirements.txt
 ```
 
 The HTML pages can be found in the templates folder.
 
-## Run the application with Phi-3.5
+## Run the application with Phi-3.5 or llama3 (on local machine)
 For running Phi-3.5 (or any other open source LLM models) locally on your PC, you need to set up Ollama. 
 
-1. Installation
+### 1. Installation
 
 Open a terminal and install Ollama via the following command:
+#### Linux:
 ``` 
 curl -fsSL https://ollama.com/install.sh | sh
 ```
+### Windows:
+Download and install the package directly from [Ollama](https://ollama.com/download)
 
-2. Set up Ollama server
+
+### 2. Set Up Ollama Server
 
 Run an Ollama server (sometimes the server is started automatically and this step can be skipped):
 ```
 ollama serve
 ```
 
-3. Run Phi-3.5
+### 3. Run Model 
 
-For running the application with Phi-3.5 (via CPU), enter this command:
+For running the application with **Phi-3.5** (via CPU), enter this command:
 ```
 ollama pull phi3
 ```
-4. Specify "phi" in the variable LLM_PROVIDER in the .env file of the project (see below for more information).
+For running the application with **llama-3.2(3B)** (via CPU), enter this command:
+```
+ollama pull llama3.2
+```
 
-## Run the application with Llama3
+### 4. Change .env file
+Specify "phi" or "llama_local" in the variable LLM_PROVIDER in the .env file of the project (see below for more information).
+
+## Run the application with Llama3 (Remote via vpn)
 Llama3 can be accessed remotely via VPN. The following steps are necessary:
 
-1. Install the Techfak VPN client by following the instructions here: https://www.techfak.net/de/vpn/
+### 1. Install the Techfak VPN client
+ follow the instructions here: https://www.techfak.net/de/vpn/
 
 
-2. Access the Techfak network via SSH using your techfak account: 
+### 2. Access the Techfak network via SSH using your techfak account: 
 ```
 ssh user@shell.techfak.de
 ```
 
-3. Access the remote PC via SSH (password secured): 
+### 3. Access the remote PC via SSH (password secured): 
 ```
 ssh aiguardians@hobel.dhcp
 ```
 
-4. Navigate to the _guess_who_ folder and activate the conda environment:
+### 4. Navigate to the _guess_who_ folder and activate the conda environment:
 ```
 conda activate guess-who-env
 ```
 
-5. Run the script starting the API server: 
+### 5. Run the script starting the API server: 
 ```
 python3 ollama_api.py
 ```
 The script is included in the api folder of this project, but it must be transferred to and run on the remote PC.
 
-6. Find out the IP address of the remote PC and copy it into the .env file in the variable REMOTE_IP_ADDRESS
+### 6. IP setup
+Find out the IP address of the remote PC and copy it into the .env file in the variable REMOTE_IP_ADDRESS
 
-7. Specify "llama3_remote" in the variable LLM_PROVIDER in the .env file of the project (see below for more information).
+### 7. Model setup
+Specify "llama3_remote" in the variable LLM_PROVIDER in the .env file of the project (see below for more information).
 
 ## Set necessary parameters in .env file
 Create a .env file at the root level of the application.
@@ -82,7 +101,7 @@ It should have the following structure:
 ## API keys
 OPENAI_API_KEY="insert_key_here"
 
-# LLM choice (options are currently "openai" or "phi" or "llama3_remote")
+# LLM choice (options are currently "openai" or "phi" or  "llama3_local" or "llama3_remote")
 LLM_PROVIDER="llm_name"
 
 # IP address for the remote machine running Llama3
