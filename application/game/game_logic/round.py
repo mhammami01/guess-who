@@ -241,9 +241,12 @@ class Round(Observable):
             'titles': name,
             'format': 'json'
         }
+        headers = {
+            "User-Agent": "GuessWho/0.1 (contact: danarebecca.meyer@googlemail.com)"
+        }
 
         try:
-            response = requests.get(wikipedia_url, params=params)
+            response = requests.get(wikipedia_url, params=params, headers=headers)
             response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
             data = response.json()
 
